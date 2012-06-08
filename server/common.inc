@@ -1,4 +1,5 @@
-Copyright (c) 2012 Gregory Gauthier
+<?php
+/** Copyright (c) 2012 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -18,3 +19,24 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+function connect_mysql(){
+	// Connect to the MySQL database using the current password
+	// returns a mysqli instance or exits the script if unsuccessful
+	global $mysql_host, $mysql_username, $mysql_password, $mysql_dbname;
+	$mysqli = new mysqli($mysql_host, $mysql_username,
+	    $mysql_password);
+
+	if($mysqli->errno){
+		printf("Unable to connect to the database:<br /> %s",
+			$mysqli->errno);
+		exit();
+	}
+	return $mysqli;
+}
+
+
+function copyright(){
+	printf("<hr />Copyright &copy; %d Gregory Gauthier <br />", date("Y"));
+}?>
