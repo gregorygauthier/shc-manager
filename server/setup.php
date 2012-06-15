@@ -21,8 +21,13 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-require_once('common.inc');
-
+require_once('common.inc');?>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="theme.css" />
+</head>
+<body>
+<?php
 $mysqli = connect_mysql();
 
 $query = "CREATE DATABASE $mysql_dbname;";
@@ -103,4 +108,6 @@ echo("<!DOCTYPE html>
 </h1></BODY></HTML>");
 
 $mysqli->close();
+echo copyright();
 ?>
+</body>

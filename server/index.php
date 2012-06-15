@@ -21,15 +21,15 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-require_once('commom.inc');
+require_once('common.inc');
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-
+<link rel="stylesheet" type="text/css" href="theme.css" />
 </head>
 <body>
-<?php echo ("<h1>The SHC 2012 server is configured correctly!</h1>")?>
+<?php echo "<h1>The SHC 2012 server is configured correctly!</h1>"; ?>
 
 <?php copyright();?>
 </body>
