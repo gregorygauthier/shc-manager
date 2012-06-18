@@ -30,6 +30,7 @@ $response_cols = 40;
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
+<title>Create category</title>
 </head>
 </html>
 <body>

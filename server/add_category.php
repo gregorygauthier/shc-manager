@@ -27,6 +27,7 @@ require_once('common.inc');
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
+<title>Adding category to database...</title>
 </head>
 <body>
 <?php

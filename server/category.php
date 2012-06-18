@@ -31,54 +31,79 @@ require_once('common.inc');
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
-</head>
-<body>
 <?php
 if(!isset($_GET['id']))
 {
-    die("<p class=\"error\">No category id was specified.</p>");
-}
-$id = $_GET['id'];
-$mysqli = connect_mysql();
-$mysqli->query("USE $mysql_dbname;");
-$query = "SELECT name, explanatory_text FROM categories WHERE id=?";
-$stmt = $mysqli->prepare($query);
-if(!$stmt)
-{
-    die("<p class=\"error\">Could not create a statement to query the".
-    " categories table.</p>");
-}
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$stmt->bind_result($catname, $expl);
-if($stmt->fetch())
-{
-    echo("<h1>$catname</h1>");
-    echo("<p class=\"explanatory\">$expl</p>");
+    $errortext="No category id was specified.";
 }
 else
 {
-    die("<p class=\"error\">Invalid category id specified.</p>");
+    $id = $_GET['id'];
+    $mysqli = connect_mysql();
+    $mysqli->query("USE $mysql_dbname;");
+    $query = "SELECT name, explanatory_text FROM categories WHERE id=?";
+    $stmt = $mysqli->prepare($query);
+    if(!$stmt)
+    {
+        $errortext="Could not create a statement to query the".
+        " categories table.";
+    }
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->bind_result($catname, $expl);
+    if(!$stmt->fetch())
+    {
+        $errortext="Invalid category id specified.";
+    }
+    $stmt->close();
 }
-$stmt->close();
-$query = "SELECT clue_text, point_value FROM clues WHERE category_id=?".
-    " ORDER BY point_value ASC";
-$stmt = $mysqli->prepare($query);
-if(!$stmt)
+?>
+<title>
+<?php
+if(isset($errortext))
 {
-    die("<p class=\"error\">Could not create a statement to query the".
-    " clues table.</p>");
+    echo "Error displaying category";
 }
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$stmt->bind_result($cluetext, $pts);
-echo "<ul>";
-while($stmt->fetch())
+else
 {
-    echo "<li>($pts) $cluetext</li>";
+    echo $catname;
 }
-echo "</ul>";
-$mysqli->close();
+?>
+</title>
+</head>
+<body>
+<?php
+if(!isset($errortext))
+{
+    echo("<h1>$catname</h1>");
+    echo("<p class=\"explanatory\">$expl</p>");
+    $query = "SELECT clue_text, point_value FROM clues WHERE category_id=?".
+        " ORDER BY point_value ASC";
+    $stmt = $mysqli->prepare($query);
+    if(!$stmt)
+    {
+        $errortext="Could not create a statement to query the".
+        " clues table.";
+    }
+    else
+    {
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->bind_result($cluetext, $pts);
+        echo "<ul>";
+        while($stmt->fetch())
+        {
+            echo "<li>($pts) $cluetext</li>";
+        }
+        echo "</ul>";
+        $mysqli->close();
+    }
+}
+if(isset($errortext))
+{
+    echo "<p class=\"error\">$errortext</p>";
+}
+
 ?>
 <?php copyright();?>
 </body>

@@ -27,6 +27,7 @@ require_once('common.inc');
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
+<title>SHC Manager</title>
 </head>
 <body>
 <?php echo "<h1>The SHC 2012 server is configured correctly!</h1>"; ?>
