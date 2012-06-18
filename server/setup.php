@@ -25,6 +25,7 @@ require_once('common.inc');?>
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
+<link rel="icon" type="image/png" href="shcicon.png" />
 <title>SHC Manager setup</title>
 </head>
 <body>
