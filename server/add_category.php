@@ -62,7 +62,7 @@ for($i = 1; $i <= 5; $i++)
     $stmt = $mysqli->prepare($query);
     $point_value = 2 * $i;
     $wrong_point_value = -$i;
-    $stmt->bind_param("sddd", $_POST["clue$i"], $cat_id,
+    $stmt->bind_param("siii", $_POST["clue$i"], $cat_id,
         $point_value, $wrong_point_value);
     $stmt->execute() or die("Could not add clue $i to database.");
     $clue_ids[$i] = $mysqli->insert_id;
