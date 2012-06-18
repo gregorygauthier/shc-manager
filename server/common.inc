@@ -39,5 +39,8 @@ function connect_mysql(){
 
 
 function copyright(){
-	printf("<hr />Copyright &copy; %d Gregory Gauthier <br />", date("Y"));
+	printf("<hr />Website design and source code copyright ".
+	    "&copy; %d Gregory Gauthier <br />", date("Y"));
+	echo "All clues and responses remain the property of their respective".
+	    " authors.";
 }?>
