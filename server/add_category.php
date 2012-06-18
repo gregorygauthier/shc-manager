@@ -66,6 +66,7 @@ for($i = 1; $i <= 5; $i++)
         $point_value, $wrong_point_value);
     $stmt->execute() or die("Could not add clue $i to database.");
     $clue_ids[$i] = $mysqli->insert_id;
+    $stmt->close();
 }
 
 for($i = 1; $i <= 5; $i++)
@@ -74,8 +75,9 @@ for($i = 1; $i <= 5; $i++)
         " (clue_id, response_text, correct) VALUES (?, ?, ?)";
     $stmt = $mysqli->prepare($query);
     $correct = 1;
-    $stmt->bind_param("dsd", $clue_ids[$i], $_POST["response$i"], $correct);
+    $stmt->bind_param("isi", $clue_ids[$i], $_POST["response$i"], $correct);
     $stmt->execute() or die("Could not add response $i to database.");
+    $stmt->close();
 }
 $mysqli->close();
 echo "Successfully added the category, clues, and responses!";
