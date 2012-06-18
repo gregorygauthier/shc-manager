@@ -79,6 +79,7 @@ for($i = 1; $i <= 5; $i++)
 }
 $mysqli->close();
 echo "Successfully added the category, clues, and responses!";
+copyright();
 ?>
 </body>
 </html>
