@@ -70,10 +70,13 @@ if(isset($errortext))
 }
 else
 {
+    $count = 1;
     while($stmt->fetch())
     {
-        echo "<tr><td><a href=\"category.php?id=$id\">$id</a></td>".
-            "<td>$name</td></tr>";
+        $row_class = ($count % 2 == 0 ? "even" : "odd");
+        echo "<tr class=\"$row_class\"><td><a href=\"category.php?id=$id\">".
+            "$id</a></td><td>$name</td></tr>";
+        $count++;
     }
     $stmt->close();
 }

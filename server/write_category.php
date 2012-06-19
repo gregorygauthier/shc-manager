@@ -47,6 +47,15 @@ $response_cols = 40;
 rows="<?php echo $text_rows;?>" cols="<?php echo $clue_cols;?>"
 name="explanatory"></textarea></td>
 </tr>
+<tr>
+<td>Point values:</td>
+<td>
+<input type="radio" name="point_scheme" value="first" checked/>
+First category (2-4-6-8-10)
+<input type="radio" name="point_scheme" value="second" />
+Second category (3-6-9-12-15)
+</td>
+</tr>
 </table>
 <table>
 <tr>

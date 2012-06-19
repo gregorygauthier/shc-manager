@@ -56,13 +56,15 @@ $cat_id = $mysqli->insert_id;
 
 $clue_ids = array();
 
+$multiplier = ($_POST["point_scheme"] == "second" ? 3 : 2);
+
 for($i = 1; $i <= 5; $i++)
 {
     $query = "INSERT INTO clues".
         " (clue_text, category_id, point_value, wrong_point_value)".
         " VALUES (?, ?, ?, ?)";
     $stmt = $mysqli->prepare($query);
-    $point_value = 2 * $i;
+    $point_value = $multiplier * $i;
     $wrong_point_value = -$i;
     $stmt->bind_param("siii", $_POST["clue$i"], $cat_id,
         $point_value, $wrong_point_value);

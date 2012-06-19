@@ -14,3 +14,15 @@ textarea.fullwidthinput
 {
 width:100%;
 }
+th
+{
+background-color: #CCCCCC;
+}
+tr.even
+{
+background-color: #66CCFF;
+}
+tr.odd
+{
+background-color: #99FFFF;
+}
