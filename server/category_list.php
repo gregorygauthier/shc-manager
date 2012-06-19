@@ -35,6 +35,7 @@ require_once('common.inc');
 <title>Category listing</title>
 </head>
 <body>
+<h1>Category listing</h1>
 <?php
 $mysqli = connect_mysql();
 if(isset($_GET['start']))
@@ -46,6 +47,13 @@ else
     $start = 0;
 }
 $mysqli->query("USE $mysql_dbname;");
+$query = "SELECT COUNT(*) FROM categories";
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
+$stmt->bind_result($num_categories);
+$stmt->fetch();
+$stmt->close();
+
 $query = "SELECT id, name FROM categories ORDER BY id ASC ".
     "LIMIT ?,$entries_per_page";
 $stmt = $mysqli->prepare($query);
@@ -83,6 +91,24 @@ else
 $mysqli->close();
 ?>
 </table>
+Go to page: 
+<?php
+$num_pages = ceil($num_categories/$entries_per_page);
+printf("(%d %s) ", $num_pages, ($num_pages == 1 ? "page" : "pages"));
+$current_page = ($start % 50 == 0 ? ($start/$entries_per_page) + 1 : -1);
+for($i = 1; $i <= $num_pages; $i++)
+{
+    if($i != $current_page)
+    {
+        printf('<a href="category_list.php?start=%d">%d</a> ',
+            $entries_per_page * ($i - 1), $i);
+    }
+    else
+    {
+        printf('<b>%d</b> ', $i);
+    }
+}
+?>
 <?php
 copyright();
 ?>
