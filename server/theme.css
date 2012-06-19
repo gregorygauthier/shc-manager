@@ -17,6 +17,7 @@ width:100%;
 th
 {
 background-color: #CCCCCC;
+padding: 5px;
 }
 tr.even
 {
@@ -25,4 +26,12 @@ background-color: #66CCFF;
 tr.odd
 {
 background-color: #99FFFF;
+}
+td
+{
+padding: 2px;
+}
+td.idnumber
+{
+text-align: right;
 }

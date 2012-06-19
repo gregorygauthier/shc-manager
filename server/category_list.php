@@ -82,7 +82,8 @@ else
     while($stmt->fetch())
     {
         $row_class = ($count % 2 == 0 ? "even" : "odd");
-        echo "<tr class=\"$row_class\"><td><a href=\"category.php?id=$id\">".
+        echo "<tr class=\"$row_class\"><td class=\"idnumber\">".
+            "<a href=\"category.php?id=$id\">".
             "$id</a></td><td>$name</td></tr>";
         $count++;
     }
