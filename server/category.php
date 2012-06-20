@@ -67,7 +67,7 @@ if(isset($errortext))
 }
 else
 {
-    echo $catname;
+    echo strip_tags($catname);
 }
 ?>
 </title>

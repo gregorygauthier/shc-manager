@@ -46,8 +46,8 @@ $stmt = $mysqli->prepare($query);
 
 $stmt->bind_param("ssi", $name, $explanatory_text, $sequence);
 
-$name = $_POST["categoryname"];
-$explanatory_text = $_POST["explanatory"];
+$name = strip_tags($_POST["categoryname"], '<b><i><u>');
+$explanatory_text = strip_tags($_POST["explanatory"], '<a><b><i><u>');
 $sequence = 1;
 
 $stmt->execute() or die ("Could not add category to database.");
@@ -66,8 +66,8 @@ for($i = 1; $i <= 5; $i++)
     $stmt = $mysqli->prepare($query);
     $point_value = $multiplier * $i;
     $wrong_point_value = -$i;
-    $stmt->bind_param("siii", $_POST["clue$i"], $cat_id,
-        $point_value, $wrong_point_value);
+    $stmt->bind_param("siii", strip_tags($_POST["clue$i"], '<a><b><i><u>'),
+        $cat_id, $point_value, $wrong_point_value);
     $stmt->execute() or die("Could not add clue $i to database.");
     $clue_ids[$i] = $mysqli->insert_id;
     $stmt->close();
@@ -79,7 +79,8 @@ for($i = 1; $i <= 5; $i++)
         " (clue_id, response_text, correct) VALUES (?, ?, ?)";
     $stmt = $mysqli->prepare($query);
     $correct = 1;
-    $stmt->bind_param("isi", $clue_ids[$i], $_POST["response$i"], $correct);
+    $stmt->bind_param("isi", $clue_ids[$i],
+        strip_tags($_POST["response$i"]), $correct);
     $stmt->execute() or die("Could not add response $i to database.");
     $stmt->close();
 }
