@@ -20,37 +20,50 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-require_once("config.inc");
 
-$text_rows = 3;
-$clue_cols = 60;
-$response_cols = 40;
+/* USAGE OF THIS PAGE: id is a required parameter that represents the
+id of a clue to be edited */
 
-function connect_mysql(){
-	// Connect to the MySQL database using the current password
-	// returns a mysqli instance or exits the script if unsuccessful
-	global $mysql_host, $mysql_username, $mysql_password, $mysql_dbname;
-	$mysqli = new mysqli($mysql_host, $mysql_username,
-	    $mysql_password);
-
-	if($mysqli->errno){
-		printf("Unable to connect to the database:<br /> %s",
-			$mysqli->errno);
-		exit();
-	}
-	return $mysqli;
-}
-
-
-function copyright(){
-	printf("<hr />Website design and source code copyright ".
-	    "&copy; %d Gregory Gauthier <br />", date("Y"));
-	echo "All clues and responses remain the property of their respective".
-	    " authors.";
-}
-
-function displayError($error)
-{
-    echo "<p class=\"error\">$error</p>";
-}
+require_once('common.inc');
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="theme.css" />
+<link rel="icon" type="image/png" href="shcicon.png" />
+<title>Submitting modified clue</title>
+</head>
+<body>
+<?php
+
+$mysqli = connect_mysql();
+
+$query = "USE $mysql_dbname;";
+
+$mysqli->query($query);
+
+$query = "UPDATE clues SET clue_text=?, point_value=?, wrong_point_value=?
+    WHERE id=?";
+
+$stmt = $mysqli->prepare($query);
+
+$stmt->bind_param("siii", $_POST['clue'], $_POST['pointvalue'],
+    $_POST['wrongpointvalue'], $_POST['id']);
+
+$stmt->execute();
+
+if($stmt->affected_rows)
+{
+    echo "<p>Clue updated successfully!</p>";
+}
+else
+{
+    displayError("The clue could not be updated.");
+}
+
+$stmt->close();
+
+copyright();
+?>
+</body>
+</html>

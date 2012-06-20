@@ -80,7 +80,7 @@ for($i = 1; $i <= 5; $i++)
     $stmt = $mysqli->prepare($query);
     $correct = 1;
     $stmt->bind_param("isi", $clue_ids[$i],
-        strip_tags($_POST["response$i"]), $correct);
+        $_POST["response$i"], $correct);
     $stmt->execute() or die("Could not add response $i to database.");
     $stmt->close();
 }

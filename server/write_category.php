@@ -22,9 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-$text_rows = 3;
-$clue_cols = 60;
-$response_cols = 40;
+
 ?>
 <!DOCTYPE html>
 <html>

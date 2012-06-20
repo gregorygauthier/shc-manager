@@ -102,7 +102,7 @@ if(!isset($errortext))
 }
 if(isset($errortext))
 {
-    echo "<p class=\"error\">$errortext</p>";
+    displayError($errortext);
 }
 
 ?>
