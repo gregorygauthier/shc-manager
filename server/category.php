@@ -78,8 +78,8 @@ if(!isset($errortext))
 {
     echo("<h1>$catname</h1>");
     echo("<p class=\"explanatory\">$expl</p>");
-    $query = "SELECT clue_text, point_value FROM clues WHERE category_id=?".
-        " ORDER BY point_value ASC";
+    $query = "SELECT id, clue_text, point_value, wrong_point_value
+        FROM clues WHERE category_id=? ORDER BY point_value ASC";
     $stmt = $mysqli->prepare($query);
     if(!$stmt)
     {
@@ -90,11 +90,12 @@ if(!isset($errortext))
     {
         $stmt->bind_param("i", $id);
         $stmt->execute();
-        $stmt->bind_result($cluetext, $pts);
+        $stmt->bind_result($clue_id, $cluetext, $pts, $wrong_pts);
         echo "<ul>";
         while($stmt->fetch())
         {
-            echo "<li>($pts) $cluetext</li>";
+            printf ('<li>(<a href="edit_clue.php?id=%d">edit</a>) '.
+            '(%d/%d) %s</li>', $clue_id, $pts, $wrong_pts, $cluetext);
         }
         echo "</ul>";
         $mysqli->close();
