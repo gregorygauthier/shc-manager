@@ -89,7 +89,16 @@ while(false);
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title><?php ?></title>
+<title><?php
+if(isset($errortext))
+{
+    echo "Error adding user";
+}
+else
+{
+    echo "User added successfully";
+}
+?></title>
 </head>
 <body>
 <?php
