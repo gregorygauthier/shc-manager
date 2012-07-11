@@ -10,6 +10,11 @@ p.explanatory
 {
 font-style: italic;
 }
+p.footnote
+{
+font-style: italic;
+font-size: 75%;
+}
 p.responsecorrect
 {
 background-color: #99FFFF;
@@ -40,6 +45,18 @@ td
 padding: 2px;
 }
 td.idnumber
+{
+text-align: right;
+}
+td.marker
+{
+text-align: center;
+}
+td.rank
+{
+text-align: right;
+}
+td.score
 {
 text-align: right;
 }
