@@ -30,8 +30,23 @@ foreach($_POST as $key => $value)
     if(preg_match('/^response(\d+)/', $key, $matches))
     {
         $tmp = $value;
-        preg_replace('/[^\w]/', '', $tmp);
-        preg_replace('/\s+/', ' ', $tmp);
+        // Here are the rules for storing answers:
+        // All non-alphanumeric characters are removed.
+        // All whitespace is converted to a single space.
+        // All leading and trailing whitespace is removed
+        // The only exceptions is as follows:
+        // A decimal point in a numerical expression is preserved
+        // To be precise, this refers to a decimal point that is
+        // NOT followed by a numerical character
+        //
+        // Examples:
+        // Mr. Jones -> Mr Jones
+        // $1000. -> 1000
+        // .14159 -> .14159
+        $tmp = preg_replace('/[^A-Za-z0-9.\s]/', '', $tmp);
+        $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
+        $tmp = preg_replace('/\s+/', ' ', $tmp);
+        $tmp = trim($tmp);
         $responses[$matches[1]] = $tmp;
     }
     else if($key == 'playerid')
@@ -76,14 +91,14 @@ do
             break;
         }
         
-        $stmt->bind_param("ii", $player_id, $category_id);
+        $stmt->bind_param("ii", $player_id, $id);
         
         $stmt->execute();
         
-        $stmt->bind_result($response_exists);
+        $stmt->bind_result($num_responses);
         $stmt->fetch();
         $stmt->close();
-        if($response_exists)
+        if($num_responses > 0)
         {
             $stmt = $mysqli->prepare($query_replace);
             $stmt->bind_param("sii", $resp, $player_id, $id);
@@ -94,15 +109,16 @@ do
             $stmt->bind_param("iis", $player_id, $id, $resp);
         }
         $stmt->execute();
-        if(!$stmt->affected_rows)
+        /*if(!$stmt->affected_rows)
         {
             if(!isset($errortext))
             {
                 $errortext = "";
             }
             $errortext .= "Response for question id $id could not be placed
-                into the database.";
-        }
+                into the database.  ";
+        }*/ // Removed since an update that preserves a response causes
+            // 0 rows to be affected
         $stmt->close();
     }
 }while(false);
