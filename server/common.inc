@@ -70,11 +70,24 @@ function navbar()
     echo implode(" &bull; ", $strings);
 }
 
+function disclaimer()
+{
+    echo 'The Summer Hiatus Challenge is an unofficial fan-run competition.
+        Neither Sony Pictures Entertainment nor <i>Jeopardy!</i> have
+        endorsed, sponsored, or affiliated with
+        this competition or this website.  All trademarks
+        are the property of their respective owners and are being used on
+        this website for the purposes of identification and not for
+        commercial use.';
+}
+
 function footer()
 {
     echo '<hr />';
     navbar();
     echo '<hr />';
     copyright();
+    echo '<br />';
+    disclaimer();
 }
 ?>

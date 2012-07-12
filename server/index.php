@@ -31,7 +31,18 @@ require_once('common.inc');
 <title>SHC Manager</title>
 </head>
 <body>
-<?php echo "<h1>The SHC 2012 server is configured correctly!</h1>"; ?>
+<h1>Welcome to the Summer Hiatus Challenge 2012 homepage!</h1>
+<p>The Summer Hiatus Challenge is a competition on <a href="http://jboard.tv">
+jboard.tv</a> (and, previously, the official Sony <i>Jeopardy!</i>
+message boards).  Now in its eighth iteration, the Summer Hiatus Challenge
+gives <i>Jeopardy!</i> fans and contestant hopefuls the opportunity
+to participate in a fun trivia challenge with clues in the style of
+the clues featured on <i>Jeopardy!</i>.</p>
+<p>Use the navigation links at the bottom of this page to access all the
+information available on this site, including current standings and
+the clues in use for this competition.  If you have permission, you can
+also perform administrative actions like grading and adding new clues
+and users to the database.</p>
 
 <?php footer();?>
 </body>
