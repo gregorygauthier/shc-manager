@@ -110,7 +110,7 @@ else
 {
     echo "<p>Successfully added user ". $_POST['name']." to database!</p>";
 }
-copyright();
+footer();
 ?>
 </body>
 </html>

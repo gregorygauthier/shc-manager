@@ -133,7 +133,7 @@ else
 {
     displayError($errortext);
 }
-copyright();
+footer();
 ?>
 </body>
 </html>

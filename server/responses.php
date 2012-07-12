@@ -185,7 +185,7 @@ foreach($categories as $id => $name)
 </div>
 </form>
 <?php
-copyright();
+footer();
 ?>
 </body>
 </html>

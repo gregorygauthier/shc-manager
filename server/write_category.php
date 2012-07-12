@@ -132,6 +132,6 @@ name="response5">
 </table>
 <button type="submit">Submit</button>
 </form>
-<?php copyright();?>
+<?php footer();?>
 </body>
 </html>

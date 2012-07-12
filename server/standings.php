@@ -123,6 +123,6 @@ if(!isset($errortext))
 <p class="footnote">Note that scores are tentative and unofficial.
 Responses that do not match the regular expression pattern for any given
 response, correct or incorrect, are neither given credit nor penalized.</p>
-<?php copyright(); ?>
+<?php footer(); ?>
 </body>
 </html>

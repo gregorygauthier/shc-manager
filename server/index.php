@@ -33,6 +33,6 @@ require_once('common.inc');
 <body>
 <?php echo "<h1>The SHC 2012 server is configured correctly!</h1>"; ?>
 
-<?php copyright();?>
+<?php footer();?>
 </body>
 </html>

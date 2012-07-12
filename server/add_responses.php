@@ -152,7 +152,7 @@ else
 {
     echo "<p>Responses added successfully!</p>";
 }
-copyright();
+footer();
 ?>
 </body>
 </html>

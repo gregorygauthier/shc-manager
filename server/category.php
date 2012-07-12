@@ -107,6 +107,6 @@ if(isset($errortext))
 }
 
 ?>
-<?php copyright();?>
+<?php footer();?>
 </body>
 </html>

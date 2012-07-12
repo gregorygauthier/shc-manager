@@ -111,6 +111,6 @@ for($i = 1; $i <= $num_pages; $i++)
 }
 ?>
 <?php
-copyright();
+footer();
 ?>
 </body>

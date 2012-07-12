@@ -43,7 +43,7 @@ function connect_mysql(){
 
 
 function copyright(){
-	printf("<hr />Website design and source code copyright ".
+	printf("Website design and source code copyright ".
 	    "&copy; %d Gregory Gauthier <br />", date("Y"));
 	echo "All clues and responses remain the property of their respective".
 	    " authors.";
@@ -52,5 +52,29 @@ function copyright(){
 function displayError($error)
 {
     echo "<p class=\"error\">$error</p>";
+}
+
+function navbar()
+{
+    $places = array();
+    $places['Home'] = 'main.php';
+    $places['Standings'] = 'standings.php';
+    $places['Category list'] = 'category_list.php';
+    $places['Write category'] = 'write_category.php';
+    $places['Add user'] = 'new_player.php';
+    $strings = array();
+    foreach($places as $name => $href)
+    {
+        $strings[] = sprintf('<a href="%s">%s</a>', $href, $name);
+    }
+    echo implode(" &bull; ", $strings);
+}
+
+function footer()
+{
+    echo '<hr />';
+    navbar();
+    echo '<hr />';
+    copyright();
 }
 ?>

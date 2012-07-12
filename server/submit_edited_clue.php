@@ -63,7 +63,7 @@ else
 
 $stmt->close();
 
-copyright();
+footer();
 ?>
 </body>
 </html>

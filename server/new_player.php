@@ -39,6 +39,6 @@ require_once('common.inc');
 <p><input type="checkbox" name="atb" value="yes" />ATB eligible</p>
 <button type="submit">Submit</button>
 </form>
-<?php copyright();?>
+<?php footer();?>
 </body>
 </html>
