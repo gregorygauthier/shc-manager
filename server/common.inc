@@ -57,7 +57,7 @@ function displayError($error)
 function navbar()
 {
     $places = array();
-    $places['Home'] = 'main.php';
+    $places['Home'] = 'index.php';
     $places['Standings'] = 'standings.php';
     $places['Category list'] = 'category_list.php';
     $places['Write category'] = 'write_category.php';
