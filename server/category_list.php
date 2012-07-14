@@ -70,7 +70,7 @@ else
 }
 ?>
 <table>
-<tr><th>ID</th><th>Category name</th></tr>
+<tr><th>ID</th><th>Category name</th><th>Edit</th></tr>
 <?php
 if(isset($errortext))
 {
@@ -84,7 +84,8 @@ else
         $row_class = ($count % 2 == 0 ? "even" : "odd");
         echo "<tr class=\"$row_class\"><td class=\"idnumber\">".
             "<a href=\"category.php?id=$id\">".
-            "$id</a></td><td>$name</td></tr>";
+            "$id</a></td><td>$name</td>".
+            "<td>(<a href=\"edit_category.php?id=$id\">edit</a>)</td></tr>";
         $count++;
     }
     $stmt->close();

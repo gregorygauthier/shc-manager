@@ -28,7 +28,7 @@ require_once('common.inc');
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Submitting modified clue</title>
+<title>Submitting modified category</title>
 </head>
 <body>
 <?php
@@ -39,23 +39,23 @@ $query = "USE $mysql_dbname;";
 
 $mysqli->query($query);
 
-$query = "UPDATE clues SET clue_text=?, point_value=?, wrong_point_value=?
+$query = "UPDATE categories SET name=?, explanatory_text=?
     WHERE id=?";
 
 $stmt = $mysqli->prepare($query);
 
-$stmt->bind_param("siii", $_POST['clue'], $_POST['pointvalue'],
-    $_POST['wrongpointvalue'], $_POST['id']);
+$stmt->bind_param("ssi", $_POST['catname'], $_POST['explanatory'],
+    $_POST['id']);
 
 $stmt->execute();
 
 if($stmt->affected_rows)
 {
-    echo "<p>Clue updated successfully!</p>";
+    echo "<p>Category updated successfully!</p>";
 }
 else
 {
-    displayError("The clue has not changed could not be updated.");
+    displayError("The category has not changed or could not be updated.");
 }
 
 $stmt->close();
