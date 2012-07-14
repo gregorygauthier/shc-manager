@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 /* USAGE OF THIS PAGE: id is a required parameter that represents the
-id of a clue to be edited */
+id of a clue to be edited. */
 
 require_once('common.inc');
 
@@ -98,7 +98,8 @@ if(!isset($errortext))
     }
     $stmt->close();
     echo "<h1>Editing clue $id</h1>";
-    echo '<form action="submit_edited_clue.php" method="post">';
+    printf( '<form action="submit_edited_clue.php?id=%d" method="post">',
+        $id);
     echo '<table><tr><th>Category</th>';
     echo "<td>$category_name</td></tr>";
     echo '<tr><th>Explanatory text</th>';
@@ -111,7 +112,8 @@ if(!isset($errortext))
     printf('<td><textarea class="fullwidthinput"'.
         'rows="%d" cols="%d" name="clue">%s</textarea></td></tr>',
         $text_rows, $clue_cols, $clue_text);
-    echo '<tr><th>Responses</th><td>';
+    printf('<tr><th>Responses (<a href="edit_responses.php?id=%d">edit</a>)'.
+        '</th><td>', $id);
     foreach($responses as $idx => $response)
     {
         $correct = $responses_correct[$idx];
