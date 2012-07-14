@@ -23,7 +23,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* USAGE OF THIS PAGE: id is a get parameter that represents
 the id number of the category to be displayed.  If id is not specified,
-it is an error.*/
+it is an error.  Format is optional; if format=bbcode, the clues
+are displayed in a text area for copypasting.  If format=normal
+or is not given, then the usual HTML format is used.*/
 
 require_once('common.inc');
 ?>
@@ -91,13 +93,80 @@ if(!isset($errortext))
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $stmt->bind_result($clue_id, $cluetext, $pts, $wrong_pts);
-        echo "<ul>";
-        while($stmt->fetch())
+        if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
         {
-            printf ('<li>(<a href="edit_clue.php?id=%d">edit</a>) '.
-            '(%d/%d) %s</li>', $clue_id, $pts, $wrong_pts, $cluetext);
+            echo "You can copy and paste the text below onto a forum:";
+            $modified_catname = $catname;
+            // Remove <b></b> tags; change <i></i> and <u></u> tags to BBcode
+            $modified_catname = preg_replace('/<\/?b>/i', '',
+                $modified_catname);
+            $modified_catname = preg_replace('/<i>/i', '[i]',
+                $modified_catname);
+            $modified_catname = preg_replace('/<\/i>/i', '[/i]',
+                $modified_catname);
+            $modified_catname = preg_replace('/<u>/i', '[u]',
+                $modified_catname);
+            $modified_catname = preg_replace('/<\/u>/i', '[/u]',
+                $modified_catname);
+            printf('<textarea class="fullwidthinput"'.
+                'rows="%d" cols="%d" name="pasteable">',
+                $pasteable_rows, $clue_cols);
+            printf('[b]%s[/b]', $modified_catname);
+            
+            echo "\n\n";
+            
+            $modified_expl = $expl;
+            $modified_expl = preg_replace('/<i>/i', '[/i]',
+                $modified_expl);
+            $modified_expl = preg_replace('/<\/i>/i', '[i]',
+                $modified_expl);
+            $modified_expl = preg_replace('/<b>/i', '[b]',
+                $modified_expl);
+            $modified_expl = preg_replace('/<\/b>/i', '[/b]',
+                $modified_expl);
+            $modified_expl = preg_replace('/<u>/i', '[u]',
+                $modified_expl);
+            $modified_expl = preg_replace('/<\/u>/i', '[/u]',
+                $modified_expl);
+            $modified_expl = preg_replace(
+                    '/<a href="([^">]*)">(.*)<\/a>/i', 
+                    '[url=$1]$2[/url]', $modified_expl);
+            printf ('[i]%s[/i]', $modified_expl);
+            echo "\n\n";
+            
+            while($stmt->fetch())
+            {
+                $modified_cluetext = $cluetext;
+                $modified_cluetext = preg_replace('/<b>/i', '[b]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace('/<\/b>/i', '[/b]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace('/<i>/i', '[i]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace('/<\/i>/i', '[/i]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace('/<u>/i', '[u]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace('/<\/u>/i', '[/u]',
+                    $modified_cluetext);
+                $modified_cluetext = preg_replace(
+                    '/<a href="([^">]*)">(.*)<\/a>/i', 
+                    '[url=$1]$2[/url]', $modified_cluetext);
+                printf ('%d. %s', $pts, $modified_cluetext);
+                echo "\n";
+            }
+            echo '</textarea>';
         }
-        echo "</ul>";
+        else
+        {
+            echo "<ul>";
+            while($stmt->fetch())
+            {
+                printf ('<li>(<a href="edit_clue.php?id=%d">edit</a>) '.
+                '(%d/%d) %s</li>', $clue_id, $pts, $wrong_pts, $cluetext);
+            }
+            echo "</ul>";
+        }
         $mysqli->close();
     }
 }
@@ -107,6 +176,18 @@ if(isset($errortext))
 }
 
 ?>
+<p>View the <?php
+if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
+{
+    printf('<a href="category.php?id=%d&format=normal">normal HTML version</a>',
+        $id);
+}
+else
+{
+    printf('<a href="category.php?id=%d&format=bbcode">BBCode version</a>',
+        $id);
+}
+?></p>
 <?php footer();?>
 </body>
 </html>

@@ -23,6 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 require_once("config.inc");
 
 $text_rows = 3;
+$pasteable_rows = 15;
 $clue_cols = 60;
 $response_cols = 40;
 
