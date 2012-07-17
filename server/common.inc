@@ -68,7 +68,9 @@ function navbar()
     {
         $strings[] = sprintf('<a href="%s">%s</a>', $href, $name);
     }
+    echo '<nav>';
     echo implode(" &bull; ", $strings);
+    echo '</nav>';
 }
 
 function disclaimer()
@@ -84,11 +86,13 @@ function disclaimer()
 
 function footer()
 {
+    echo '<footer>';
     echo '<hr />';
     navbar();
     echo '<hr />';
     copyright();
     echo '<br />';
     disclaimer();
+    echo '</footer>';
 }
 ?>

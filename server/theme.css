@@ -2,6 +2,19 @@ body
 {
 font-family: arial, sans-serif;
 }
+footer
+{
+font-size: 75%;
+}
+nav
+{
+font-size: 133%;
+border: solid yellow 2px;
+background-color: #FFFFCC;
+padding: 10px;
+margin: 10px;
+text-align: center;
+}
 p.error
 {
 color: red;
