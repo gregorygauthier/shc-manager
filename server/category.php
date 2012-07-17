@@ -96,7 +96,7 @@ if(!isset($errortext))
         if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
         {
             echo "You can copy and paste the text below onto a forum:";
-            $modified_catname = $catname;
+            $modified_catname = strtoupper($catname);
             // Remove <b></b> tags; change <i></i> and <u></u> tags to BBcode
             $modified_catname = preg_replace('/<\/?b>/i', '',
                 $modified_catname);
