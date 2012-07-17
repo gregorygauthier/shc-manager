@@ -52,6 +52,7 @@ $query = "CREATE TABLE days (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30),
   round_id SMALLINT,
+  play_date DATE,
   sequence SMALLINT NOT NULL,
   FOREIGN KEY (round_id) REFERENCES rounds(id));";
 

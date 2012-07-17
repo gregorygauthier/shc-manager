@@ -38,17 +38,34 @@ $query = "USE $mysql_dbname;";
 
 $mysqli->query($query);
 
+
 /* Add the category to the categories table */
-$query = "INSERT INTO categories (name, explanatory_text, sequence) VALUES
-(?, ?, ?)";
+$query = "INSERT INTO categories (name, explanatory_text, sequence, day_id)
+    VALUES (?, ?, ?, ?)";
 
 $stmt = $mysqli->prepare($query);
 
-$stmt->bind_param("ssi", $name, $explanatory_text, $sequence);
+$stmt->bind_param("ssii", $name, $explanatory_text, $sequence, $day_id);
 
 $name = strip_tags($_POST["categoryname"], '<b><i><u>');
 $explanatory_text = strip_tags($_POST["explanatory"], '<a><b><i><u>');
-$sequence = 1;
+if(is_null($_POST["dayid"]))
+{
+    $day_id = null;
+    $sequence = 1;
+}
+else
+{
+    $day_id = $_POST["dayid"];
+    $subquery = "SELECT 1 + IF(MAX(sequence) IS NULL, 0, MAX(sequence))
+        FROM categories WHERE day_id = ?";
+    $substmt = $mysqli->prepare($subquery);
+    $substmt->bind_param('i', $day_id);
+    $substmt->execute();
+    $substmt->bind_result($sequence);
+    $substmt->fetch();
+    $substmt->close();
+}
 
 $stmt->execute() or die ("Could not add category to database.");
 

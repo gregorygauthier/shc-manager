@@ -29,12 +29,37 @@ require_once('common.inc');
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Create category</title>
+<title>Write category</title>
 </head>
 </html>
 <body>
+<h1>Writing category</h1>
 <form action="add_category.php" method="post">
 <table>
+<tr>
+<td>Day:</td>
+<td><select id="dayselector" name="dayid">
+<option value="0" selected="selected">Select a day (optional)...</option>
+<?php
+$mysqli = connect_mysql();
+$mysqli->query("USE $mysql_dbname;");
+$query = "SELECT days.id, days.name, days.play_date FROM days
+    LEFT JOIN rounds ON days.round_id = rounds.id
+    ORDER BY rounds.sequence ASC, days.sequence ASC";
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
+$stmt->bind_result($id, $name, $play_date);
+while($stmt->fetch())
+{
+    printf ('<option value="%d">%s (%s)</option>', $id, $name,
+        date('F j, Y', strtotime($play_date)));
+}
+$stmt->close();
+$mysqli->close();
+?>
+</select>
+</td>
+</tr>
 <tr>
 <td>Category name:</td>
 <td><input type="text" maxlength="100" name="categoryname" /><br /></td>
