@@ -23,9 +23,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 
-/* 
-SELECT player_id, SUM(score) AS total_score FROM (SELECT player_id, pr.clue_id, MAX(correct) AS grade FROM player_responses AS pr INNER JOIN responses AS r ON pr.clue_id = r.clue_id WHERE pr.response_text IS NOT NULL AND pr.response_text <> '' AND pr.response_text REGEXP r.response_text GROUP BY pr.clue_id, player_id) AS a INNER JOIN (SELECT id, 1 AS correct, point_value AS score FROM clues UNION SELECT id, 0 AS correct, wrong_point_value AS score FROM clues) AS b ON (a.grade = b.correct AND a.clue_id = b.id) GROUP BY player_id ORDER BY total_score DESC;
-*/
 do
 {
     $mysqli = connect_mysql();
