@@ -60,6 +60,7 @@ function navbar()
     $places = array();
     $places['Home'] = 'index.php';
     $places['Standings'] = 'standings.php';
+    $places['Calendar'] = 'calendar.php';
     $places['Category list'] = 'category_list.php';
     $places['Write category'] = 'write_category.php';
     $places['Add user'] = 'new_player.php';
