@@ -96,6 +96,7 @@ $stmt->close();
 $mysqli->close();
 ?>
 
+<!DOCTYPE html>
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
@@ -138,6 +139,11 @@ foreach($rounds as $round_id => $round_name)
     echo '</table>';
 }
 ?>
+<h2 id="newroundheader">Add a new round</h2>
+<form action="add_round.php" method="post">
+<p>Name: <input type="text" maxlength="30" name="newroundname"/>
+<button type="submit">Create round</button></p>
+</form>
 <?php footer();?>
 </body>
 </html>
