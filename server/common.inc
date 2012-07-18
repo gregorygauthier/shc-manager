@@ -44,10 +44,10 @@ function connect_mysql(){
 
 
 function copyright(){
-	printf("Website design and source code copyright ".
-	    "&copy; %d Gregory Gauthier <br />", date("Y"));
-	echo "All clues and responses remain the property of their respective".
-	    " authors.";
+	printf("<p>Website design and source code copyright ".
+	    "&copy; %d Gregory Gauthier</p>", date("Y"));
+	echo "<p>All clues and responses remain the property of their respective".
+	    " authors.</p>";
 }
 
 function displayError($error)
@@ -74,23 +74,20 @@ function navbar()
 
 function disclaimer()
 {
-    echo 'The Summer Hiatus Challenge is an unofficial fan-run competition.
+    echo '<p>The Summer Hiatus Challenge is an unofficial fan-run competition.
         Neither Sony Pictures Entertainment nor <i>Jeopardy!</i> have
         endorsed, sponsored, or affiliated with
         this competition or this website.  All trademarks
         are the property of their respective owners and are being used on
         this website for the purposes of identification and not for
-        commercial use.';
+        commercial use.</p>';
 }
 
 function footer()
 {
     echo '<footer>';
-    echo '<hr />';
     navbar();
-    echo '<hr />';
     copyright();
-    echo '<br />';
     disclaimer();
     echo '</footer>';
 }

@@ -36,6 +36,11 @@ p.responseincorrect
 {
 background-color: #FFCCCC;
 }
+footer p
+{
+margin-top: 0px;
+margin-bottom: 0px;
+}
 textarea.fullwidthinput
 {
 width:100%;
