@@ -73,3 +73,21 @@ td.score
 {
 text-align: right;
 }
+ul
+{
+margin: 0px;
+}
+.navbar li
+{
+display: inline;
+margin: 0px 5px;
+}
+.navbar li:before
+{
+content: "\2022";
+margin-right: 0.5em;
+}
+.navbar li:first-of-type:before
+{
+content: "";
+}

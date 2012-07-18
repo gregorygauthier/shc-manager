@@ -64,14 +64,12 @@ function navbar()
     $places['Category list'] = 'category_list.php';
     $places['Write category'] = 'write_category.php';
     $places['Add user'] = 'new_player.php';
-    $strings = array();
+    echo '<nav><ul class="navbar">';
     foreach($places as $name => $href)
     {
-        $strings[] = sprintf('<a href="%s">%s</a>', $href, $name);
-    }
-    echo '<nav>';
-    echo implode(" &bull; ", $strings);
-    echo '</nav>';
+        printf('<li><a href="%s">%s</a></li>', $href, $name);
+    };
+    echo '</ul></nav>';
 }
 
 function disclaimer()
