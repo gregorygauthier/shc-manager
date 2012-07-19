@@ -112,38 +112,68 @@ foreach($rounds as $round_id => $round_name)
     if(empty($round_days[$round_id]))
     {
         echo '<p>No days found in this round.</p>';
-        continue;
     }
-    echo '<table>';
-    $rows_written = 0;
-    foreach($round_days[$round_id] as $day_id)
+    else
     {
-        $day_name = $days[$day_id];
-        $play_date = $play_dates[$day_id];
-        $day_seq = $day_seqs[$day_id];
-        $todays_cats = array();
-        foreach($day_categories[$day_id] as $cat_id)
-        {
-            $todays_cats[$cat_id] = sprintf(
-                '<a href="category.php?id=%d">%s</a>',
-                $cat_id, $categories[$cat_id]);
-        }
-        $catlist = implode(", ", $todays_cats);
-        $rows_written++;
+        echo '<table>';
         echo '<tr><th>Day</th><th>Play date</th><th>Categories</th></tr>';
-        printf('<tr id="day%d" class="%s">'.
-            '<td>%s</td><td>%s</td><td>%s</td></tr>',
-            $day_id, $rows_written % 2 ? "odd" : "even",
-            $day_name, date("F j, Y", strtotime($play_date)), $catlist);
+        $rows_written = 0;
+        foreach($round_days[$round_id] as $day_id)
+        {
+            $day_name = $days[$day_id];
+            $play_date = $play_dates[$day_id];
+            $day_seq = $day_seqs[$day_id];
+            $todays_cats = array();
+            foreach($day_categories[$day_id] as $cat_id)
+            {
+                $todays_cats[$cat_id] = sprintf(
+                    '<a href="category.php?id=%d">%s</a>',
+                    $cat_id, $categories[$cat_id]);
+            }
+            $catlist = implode(", ", $todays_cats);
+            $rows_written++;
+            printf('<tr id="day%d" class="%s">'.
+                '<td>%s</td><td>%s</td><td>%s</td></tr>',
+                $day_id, $rows_written % 2 ? "odd" : "even",
+                $day_name, date("F j, Y", strtotime($play_date)), $catlist);
+        }
+        echo '</table>';
     }
-    echo '</table>';
 }
 ?>
 <h2 id="newroundheader">Add a new round</h2>
 <form action="add_round.php" method="post">
-<p>Name: <input type="text" maxlength="30" name="newroundname"/>
+<label for="newroundnamefield">Name: </label>
+<input type="text" maxlength="30" name="newroundname" id="newroundnamefield"/>
 <button type="submit">Create round</button></p>
 </form>
-<?php footer();?>
+<?php
+if(!empty($rounds))
+{
+    echo <<<HTML
+<h3>Add a new day</h3>
+<form action="add_day.php" method="post">
+<label for="newdayroundselector">Round: </label>
+<select name="newdayround" id="newdayroundselector" required="required"/>
+HTML;
+    $options_written = 0;
+    foreach($rounds as $round_id => $round_name)
+    {
+        $options_written++;
+        printf('<option value="%d" %s>%s</option>', $round_id,
+            $options_written == 1 ? 'selected="selected"' : '', $round_name);
+    }
+    echo <<<HTML
+</select>
+<label for="newdaynamefield">Name: </label>
+<input type="text" name="newdayname" id="newdaynamefield" maxlength="30" />
+<label for="newdaydatefield">Date (YYYY-MM-DD): </label>
+<input type="date" name="newdaydate" id="newdaydatefield" />
+<button type="submit">Add day</button>
+</form>
+HTML;
+}
+footer();
+?>
 </body>
 </html>
