@@ -146,7 +146,7 @@ else
 <?php
 if(isset($errortext))
 {
-    printf('<p class="error">%s</p>', $errortext);
+    displayError($errortext);
 }
 else
 {

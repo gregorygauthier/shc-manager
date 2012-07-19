@@ -90,7 +90,7 @@ do
 <?php
 if(isset($errortext))
 {
-    printf('<p class="error">%s</p>', $errortext);
+    displayError($errortext);
 }
 ?>
 <h1>Current Standings</h1>
