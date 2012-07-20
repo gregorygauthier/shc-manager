@@ -37,7 +37,7 @@ require_once('common.inc');
 <form action="add_category.php" method="post">
 <table>
 <tr>
-<td>Day:</td>
+<td><label for="dayselector">Day:</label></td>
 <td><select id="dayselector" name="dayid">
 <option value="0" selected="selected">Select a day (optional)...</option>
 <?php
@@ -61,22 +61,25 @@ $mysqli->close();
 </td>
 </tr>
 <tr>
-<td>Category name:</td>
-<td><input type="text" maxlength="100" name="categoryname" /><br /></td>
+<td><label for="categoryname">Category name:</label></td>
+<td><input type="text" maxlength="100" name="categoryname" 
+id="categoryname"/><br /></td>
 </tr>
 <tr>
-<td>Optional explanatory text:</td>
+<td><label for="explanatory">Optional explanatory text:</label></td>
 <td><textarea 
 rows="<?php echo $text_rows;?>" cols="<?php echo $clue_cols;?>"
-name="explanatory"></textarea></td>
+name="explanatory" id="explanatory"></textarea></td>
 </tr>
 <tr>
 <td>Point values:</td>
 <td>
-<input type="radio" name="point_scheme" value="first" checked/>
-First category (2-4-6-8-10)
-<input type="radio" name="point_scheme" value="second" />
-Second category (3-6-9-12-15)
+<input type="radio" name="point_scheme" id="point_scheme_first"
+value="first" checked/>
+<label for="point_scheme_first">First category (2-4-6-8-10)</label>
+<input type="radio" name="point_scheme" id="point_scheme_second"
+value="second" />
+<label for="point_scheme_second">Second category (3-6-9-12-15)</label>
 </td>
 </tr>
 </table>
