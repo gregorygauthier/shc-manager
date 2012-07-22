@@ -71,10 +71,10 @@ do
 
     $stmt->close();
     
-    $query = "SELECT clues.id,  
-        response_text FROM clues LEFT JOIN player_responses
-        ON clues.id=player_responses.clue_id WHERE category_id=? AND
-        (player_id IS NULL OR player_id=?)";
+    $query = "SELECT clues.id, 
+        response_text FROM clues LEFT JOIN
+        (SELECT * FROM player_responses WHERE player_id=?) AS pr
+        ON clues.id=pr.clue_id WHERE category_id=?";
     
     $stmt = $mysqli->prepare($query);
     
@@ -84,7 +84,7 @@ do
         break;
     }
     
-    $stmt->bind_param("ii", $_GET["category"], $_GET["player"]);
+    $stmt->bind_param("ii", $_GET["player"], $_GET["category"]);
     
     $stmt->execute();
     

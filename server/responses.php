@@ -122,7 +122,7 @@ function update_responses()
             "&category="+categoryId, true);
         xmlhttp.send();
     }
-}
+};
 </script>
 </head>
 <body onload="update_responses()">
@@ -138,14 +138,14 @@ if(isset($errortext))
 <p>Player:
 <select id="playerselector" name="playerid" onchange="update_responses()">
 <?php
-if(!array_key_exists($_GET["player"], $players))
+if(!isset($_GET["player"]) or !array_key_exists($_GET["player"], $players))
 {
     echo '<option value="0" selected="selected">'.
         'Please select a player...</option>';
 }
 foreach($players as $id => $name)
 {
-    if($id == $_GET["player"])
+    if(isset($_GET["player"]) and $id == $_GET["player"])
     {
         printf('<option value="%d" selected="selected">%s</option>',
             $id, $name);
@@ -161,14 +161,15 @@ foreach($players as $id => $name)
 <p>Category:
 <select id="categoryselector" name="categoryid" onchange="update_responses()">
 <?php
-if(!array_key_exists($_GET["category"], $categories))
+if(!isset($_GET["category"]) or
+    !array_key_exists($_GET["category"], $categories))
 {
     echo '<option value="0" selected="selected">'.
         'Please select a category...</option>';
 }
 foreach($categories as $id => $name)
 {
-    if($id == $_GET["category"])
+    if(isset($_GET["category"]) and $id == $_GET["category"])
     {
         printf('<option value="%d" selected="selected">%s</option>',
             $id, $name);
