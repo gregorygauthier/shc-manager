@@ -31,6 +31,7 @@ The result is not well-formed html, as it is intended for inclusion in
 the responses.php form.  */
 
 require_once('common.inc');
+$isloggedin = startpage(UNRESTRICTED);
 
 do
 {
@@ -92,21 +93,28 @@ do
     
     $response_paragraphs = array();
     
+    if($isloggedin)
+    {
+        $template = '<input type="text" maxlength="65535" '.
+            'name="response%d" value="%s"/>';
+    }
+    else
+    {
+        $template = '<input type="text" maxlength="65535" '.
+            'name="response%d" readonly="readonly" value="%s"/>';
+    }
+    
     while($stmt->fetch())
     {
         if(is_null($response))
         {
             $response_paragraphs[$id] = sprintf(
-                '<input type="text" maxlength="65535" '.
-                'name="response%d" value=""/>',
-                $id);
+                $template, $id, '');
         }
         else
         {
             $response_paragraphs[$id] = sprintf(
-                '<input type="text" maxlength="65535" '.
-                'name="response%d" value="%s"/>',
-                $id, $response);
+                $template, $id, $response);
         }
     }
     
@@ -119,8 +127,10 @@ do
         printf('<tr><td>%s</td><td>%s</td></tr>', $clue_par,
             $response_paragraphs[$id]);
     }
-    
-    echo '</table><button type="submit">Submit</button>';
+    if($isloggedin)
+    {
+        echo '</table><button type="submit">Submit</button>';
+    }
 }while(false);
 if(isset($errortext))
 {

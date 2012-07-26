@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
+$isloggedin = startpage(UNRESTRICTED);
 
 $mysqli = connect_mysql();
 
@@ -140,15 +141,18 @@ foreach($rounds as $round_id => $round_name)
         echo '</table>';
     }
 }
-?>
+if($isloggedin)
+{
+    echo <<<HTML
 <h2 id="newroundheader">Add a new round</h2>
 <form action="add_round.php" method="post">
 <label for="newroundnamefield">Name: </label>
 <input type="text" maxlength="30" name="newroundname" id="newroundnamefield"/>
 <button type="submit">Create round</button></p>
 </form>
-<?php
-if(!empty($rounds))
+HTML;
+}
+if($isloggedin and !empty($rounds))
 {
     echo <<<HTML
 <h3>Add a new day</h3>

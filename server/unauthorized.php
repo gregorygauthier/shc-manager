@@ -22,24 +22,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
-
+startpage(UNRESTRICTED);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Add new player</title>
+<title>Not logged in</title>
 </head>
 <body>
-<form action="add_player.php" method="post">
-<p>Player name: <input type="text" maxlength="50" name="name" /></p>
-<p><input type="checkbox" name="teen" value="yes" /> Teen eligible</p>
-<p><input type="checkbox" name="college" value="yes" />College eligible</p>
-<p><input type="checkbox" name="atb" value="yes" />ATB eligible</p>
-<button type="submit">Submit</button>
-</form>
+<p class="unauthorized">You need to be <a href="login.php">logged in</a>
+to visit the page you were attempting to access.  Please try again once
+you have logged in.</p>
 <?php footer();?>
 </body>
 </html>

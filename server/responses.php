@@ -26,6 +26,7 @@ the player whose responses are to be filled in.  Category is an
 optional parameter that autoselects a category.  */
 
 require_once('common.inc');
+startpage(UNRESTRICTED);
 
 do
 {

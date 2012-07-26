@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
+startpage(UNRESTRICTED);
 
 do
 {
@@ -36,17 +37,8 @@ do
     $mysqli->query("USE $mysql_dbname;");
 
     $query = "SELECT username, teen_eligible, college_eligible, atb_eligible,
-        total_score FROM (SELECT player_id,
-        SUM(score) AS total_score FROM
-        (SELECT player_id, pr.clue_id, MAX(correct) AS grade
-        FROM player_responses AS pr INNER JOIN responses AS r
-        ON pr.clue_id = r.clue_id WHERE pr.response_text IS NOT NULL AND
-        pr.response_text <> '' AND pr.response_text REGEXP r.response_text
-        GROUP BY pr.clue_id, player_id) AS a INNER JOIN
-        (SELECT id, 1 AS correct, point_value AS score FROM clues UNION
-        SELECT id, 0 AS correct, wrong_point_value AS score FROM clues) AS b
-        ON (a.grade = b.correct AND a.clue_id = b.id) GROUP BY player_id) AS c
-        INNER JOIN players ON players.id=c.player_id ORDER BY total_score DESC";
+        overall_score, overall_ungraded FROM overall_scores INNER JOIN players
+        ON overall_scores.player_id = players.id ORDER BY overall_score DESC";
 
     $stmt = $mysqli->prepare($query);
     
@@ -59,13 +51,14 @@ do
     $stmt->execute();
 
     $stmt->bind_result($username, $teen_eligible, $college_eligible,
-    $atb_eligible, $score);
+    $atb_eligible, $score, $num_ungraded);
 
     $usernames = array();
     $teen_eligible_stats = array();
     $college_eligible_stats = array();
     $atb_eligible_stats = array();
     $scores = array();
+    $ungradeds = array();
 
     while($stmt->fetch())
     {
@@ -74,6 +67,7 @@ do
         $college_eligible_stats[] = $college_eligible;
         $atb_eligible_stats[] = $atb_eligible;
         $scores[] = $score;
+        $ungradeds[] = $num_ungraded;
     }
 
     $stmt->close();
@@ -96,7 +90,7 @@ if(isset($errortext))
 <h1>Current Standings</h1>
 <table>
 <tr><th>Rank</th><th>Player</th><th>Teen</th><th>College</th>
-<th>ATB</th><th>Score</th></tr>
+<th>ATB</th><th>Score</th><th>Ungraded resps.</th></tr>
 <?php
 if(!isset($errortext))
 {
@@ -107,12 +101,13 @@ if(!isset($errortext))
         printf('<tr class="%s"><td class="rank">%d</td>'.
             '<td>%s</td><td class="marker">%s</td>'.
             '<td class="marker">%s</td><td class="marker">%s</td>'.
-            '<td class="score">%d</td></tr>',
+            '<td class="score">%d</td><td class="score">%s</td></tr>',
             $records_printed % 2 ? "odd" : "even", $records_printed,
             $value, $teen_eligible_stats[$key] ? 'T' : '',
             $college_eligible_stats[$key] ? 'C' : '',
             $atb_eligible_stats[$key] ? 'A' : '',
-            $scores[$key]);
+            $scores[$key],
+            $ungradeds[$key] ? $ungradeds[$key] : '');
     }
 }
 ?>

@@ -22,24 +22,60 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(UNRESTRICTED);
 
+if(!isset($_POST['username']))
+{
+    $errortext = "Username not provided.";
+}
+elseif(!isset($_POST['password']))
+{
+    $errortext = "Password not provided.";
+}
+else
+{
+    $success = auth($_POST['username'], $_POST['password']);
+    if(!$success)
+    {
+        $errortext = "The username/password combination is invalid.";
+    }
+    else
+    {
+        $_SESSION['username'] = $_POST['username'];
+        $logged_in_username = $_SESSION['username'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Add new player</title>
+<title><?php
+if(isset($errortext))
+{
+    echo "Login failed";
+}
+else
+{
+    echo "Login succeeded";
+}
+?></title>
 </head>
 <body>
-<form action="add_player.php" method="post">
-<p>Player name: <input type="text" maxlength="50" name="name" /></p>
-<p><input type="checkbox" name="teen" value="yes" /> Teen eligible</p>
-<p><input type="checkbox" name="college" value="yes" />College eligible</p>
-<p><input type="checkbox" name="atb" value="yes" />ATB eligible</p>
-<button type="submit">Submit</button>
-</form>
-<?php footer();?>
+<?php
+if(isset($errortext))
+{
+    echo "<h1>Login failed</h1>";
+    displayError($errortext);
+}
+else
+{
+    echo "<h1>Login successful!</h1>";
+    printf('<p>You are now logged in as <span class="username">%s</span>.</p>',
+        $_SESSION['username']);
+}
+footer();
+?>
 </body>
 </html>

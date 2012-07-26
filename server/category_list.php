@@ -26,6 +26,7 @@ the starting point of the listing */
 $entries_per_page = 50;
 
 require_once('common.inc');
+$isloggedin = startpage(UNRESTRICTED);
 ?>
 <!DOCTYPE html>
 <html>
@@ -70,8 +71,13 @@ else
 }
 ?>
 <table>
-<tr><th>ID</th><th>Category name</th><th>Edit</th></tr>
 <?php
+echo '<tr><th>ID</th><th>Category name</th>';
+if($isloggedin)
+{
+    echo '<th>Edit</th>';
+}
+echo '</tr>';
 if(isset($errortext))
 {
     echo "<p class=\"error\">$errortext</p>";
@@ -84,8 +90,12 @@ else
         $row_class = ($count % 2 == 0 ? "even" : "odd");
         echo "<tr class=\"$row_class\"><td class=\"idnumber\">".
             "<a href=\"category.php?id=$id\">".
-            "$id</a></td><td>$name</td>".
-            "<td>(<a href=\"edit_category.php?id=$id\">edit</a>)</td></tr>";
+            "$id</a></td><td>$name</td>";
+        if($isloggedin)
+        {
+            echo "<td>(<a href=\"edit_category.php?id=$id\">edit</a>)</td>";
+        }
+        echo '</tr>';
         $count++;
     }
     $stmt->close();

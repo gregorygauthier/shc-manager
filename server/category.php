@@ -28,6 +28,7 @@ are displayed in a text area for copypasting.  If format=normal
 or is not given, then the usual HTML format is used.*/
 
 require_once('common.inc');
+$isloggedin = startpage(UNRESTRICTED);
 ?>
 <!DOCTYPE html>
 <html>
@@ -162,8 +163,13 @@ if(!isset($errortext))
             echo "<ul>";
             while($stmt->fetch())
             {
-                printf ('<li>(<a href="edit_clue.php?id=%d">edit</a>) '.
-                '(%d/%d) %s</li>', $clue_id, $pts, $wrong_pts, $cluetext);
+                echo '<li>';
+                if($isloggedin)
+                {
+                    printf ('(<a href="edit_clue.php?id=%d">edit</a>) ',
+                        $clue_id);
+                }
+                printf ('(%d/%d) %s</li>', $pts, $wrong_pts, $cluetext);
             }
             echo "</ul>";
         }

@@ -106,6 +106,60 @@ $query = "CREATE TABLE player_responses (
 
 $mysqli->query($query);
 
+$query = "CREATE TABLE users (
+  id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255),
+  hashed_password CHAR(128),
+  email VARCHAR(255));";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW grades AS SELECT
+  player_id, pr.clue_id, MAX(correct) AS grade FROM player_responses AS pr
+  LEFT JOIN responses AS r on pr.clue_id = r.clue_id AND
+  pr.response_text REGEXP r.response_text WHERE pr.response_text IS NOT NULL
+  AND pr.response_text <> '' GROUP BY pr.clue_id, player_id;";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW scores AS SELECT player_id, clue_id,
+  categories.id AS category_id, days.id AS day_id, rounds.id AS round_id,
+  IF(grade IS NULL, 0, IF(grade=1, point_value, wrong_point_value)) AS score,
+  IF(grade IS NULL, 1, 0) AS ungraded FROM grades
+  INNER JOIN clues ON clue_id = clues.id
+  LEFT JOIN categories ON clues.category_id = categories.id
+  LEFT JOIN days ON categories.day_id = days.id LEFT JOIN
+  rounds ON days.round_id = rounds.id;";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW category_scores AS
+  SELECT player_id, category_id, day_id, round_id, SUM(score) AS category_score,
+  SUM(ungraded) AS category_ungraded
+  FROM scores GROUP BY player_id, category_id;";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW daily_scores AS
+  SELECT player_id, day_id, round_id, SUM(score) AS daily_score,
+  SUM(ungraded) AS daily_ungraded FROM scores
+  GROUP BY player_id, day_id;";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW round_scores AS
+  SELECT player_id, round_id, SUM(score) AS round_score,
+  SUM(ungraded) AS round_ungraded FROM scores
+  GROUP BY player_id, round_id;";
+
+$mysqli->query($query);
+
+$query = "CREATE VIEW overall_scores AS
+  SELECT player_id, SUM(score) AS overall_score,
+  SUM(ungraded) AS overall_ungraded FROM scores GROUp BY player_id;";
+
+$mysqli->query($query);
+
 echo("<!DOCTYPE html>
 <HTML><HEAD></HEAD><BODY><h1>Database successfully created!
 </h1></BODY></HTML>");

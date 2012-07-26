@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
+startpage(RESTRICTED);
 
 // Check parameters to see if they are set, and set variables accordingly
 if(!isset($_POST['newdayround']))

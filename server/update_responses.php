@@ -25,6 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 post data from edit_clue.php. */
 
 require_once('common.inc');
+startpage(RESTRICTED);
 
 if(!isset($_POST['id']))
 {
