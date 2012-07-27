@@ -105,9 +105,10 @@ function navbar()
     $places['Standings'] = 'standings.php';
     $places['Calendar'] = 'calendar.php';
     $places['Category list'] = 'category_list.php';
-    $places['View/grade responses'] = 'responses.php';
+    $places['View responses'] = 'responses.php';
     if(isset($logged_in_username))
     {
+        $places['Grade responses'] = 'edit_responses.php';
         $places['Write category'] = 'write_category.php';
         $places['Add user'] = 'new_player.php';
     }

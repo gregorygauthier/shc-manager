@@ -48,29 +48,8 @@ do
         break;
     }
 
-    $stmt->execute();
+    
 
-    $stmt->bind_result($username, $teen_eligible, $college_eligible,
-    $atb_eligible, $score, $num_ungraded);
-
-    $usernames = array();
-    $teen_eligible_stats = array();
-    $college_eligible_stats = array();
-    $atb_eligible_stats = array();
-    $scores = array();
-    $ungradeds = array();
-
-    while($stmt->fetch())
-    {
-        $usernames[] = $username;
-        $teen_eligible_stats[] = $teen_eligible;
-        $college_eligible_stats[] = $college_eligible;
-        $atb_eligible_stats[] = $atb_eligible;
-        $scores[] = $score;
-        $ungradeds[] = $num_ungraded;
-    }
-
-    $stmt->close();
 } while(false);
 ?>
 <!DOCTYPE html>
@@ -79,39 +58,102 @@ do
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>Current Standings</title>
+<script>
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange=function()
+{
+    if (xmlhttp.readyState==4 && xmlhttp.status == 200)
+    {
+        document.getElementById("standings").innerHTML =
+            xmlhttp.responseText;
+    }
+};
+function update_standings()
+{
+    var idx = document.getElementById("selector").selectedIndex;
+    var idstring = document.getElementById("selector").
+        getElementsByTagName("option")[idx].getAttribute("value");
+    var matches = idstring.match(/^([ord])(\d*)$/);
+    var type = matches[1];
+    var id = matches[2];
+    var getvars = '';
+    if(type == 'd')
+    {
+        getvars = '?dayid=' + id;
+    }
+    else if(type == 'r')
+    {
+        getvars = '?roundid=' + id;
+    }
+    
+    xmlhttp.open("GET","get_standings.php"+getvars, true);
+    xmlhttp.send();
+};
+</script>
 </head>
-<body>
+<body onload="update_standings()">
+<h1>Standings</h1>
+<select id="selector" name="selector" onchange="update_standings()">
+<option value="o" selected="selected">Overall standings</option>
+<?php
+$query = "SELECT id, name FROM rounds ORDER BY sequence ASC";
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
+$stmt->bind_result($roundid, $roundname);
+$rounds = array();
+$round_days = array();
+while($stmt->fetch())
+{
+    $rounds[$roundid] = $roundname;
+    $round_days[$roundid] = array();
+}
+$stmt->close();
+$query = "SELECT days.id, rounds.id, days.name FROM days LEFT JOIN rounds ON
+    days.round_id = rounds.id ORDER BY rounds.sequence ASC,
+    days.sequence ASC";
+$stmt = $mysqli->prepare($query);
+$stmt->execute();
+$stmt->bind_result($dayid, $roundid, $dayname);
+$days = array();
+$roundless_days = array();
+while($stmt->fetch())
+{
+    if(is_null($roundid))
+    {
+        $roundless_days[] = $dayid;
+    }
+    else
+    {
+        $round_days[$roundid][] = $dayid;
+    }
+    $days[$dayid] = $dayname;
+}
+$stmt->close();
+foreach($rounds as $roundid => $roundname)
+{
+    printf('<option value="r%d"> &gt; %s</option>', $roundid, $roundname);
+    foreach($round_days[$roundid] as $dayid)
+    {
+        printf('<option value="d%d"> &gt; &gt; %s</option>',
+            $dayid, $days[$dayid]);
+    }
+}
+foreach($roundless_days as $dayid)
+{
+    printf('<option value="d%d"> &gt; &gt; %s</option>',
+        $dayid, $days[$dayid]);
+}
+$mysqli->close();
+?>
+</select>
+<div id="standings">
 <?php
 if(isset($errortext))
 {
     displayError($errortext);
 }
 ?>
-<h1>Current Standings</h1>
-<table>
-<tr><th>Rank</th><th>Player</th><th>Teen</th><th>College</th>
-<th>ATB</th><th>Score</th><th>Ungraded resps.</th></tr>
-<?php
-if(!isset($errortext))
-{
-    $records_printed = 0;
-    foreach($usernames as $key => $value)
-    {
-        $records_printed++;
-        printf('<tr class="%s"><td class="rank">%d</td>'.
-            '<td>%s</td><td class="marker">%s</td>'.
-            '<td class="marker">%s</td><td class="marker">%s</td>'.
-            '<td class="score">%d</td><td class="score">%s</td></tr>',
-            $records_printed % 2 ? "odd" : "even", $records_printed,
-            $value, $teen_eligible_stats[$key] ? 'T' : '',
-            $college_eligible_stats[$key] ? 'C' : '',
-            $atb_eligible_stats[$key] ? 'A' : '',
-            $scores[$key],
-            $ungradeds[$key] ? $ungradeds[$key] : '');
-    }
-}
-?>
-</table>
+</div>
 <p class="footnote">Note that scores are tentative and unofficial.
 Responses that do not match the regular expression pattern for any given
 response, correct or incorrect, are neither given credit nor penalized.</p>
