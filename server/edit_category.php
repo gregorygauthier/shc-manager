@@ -52,8 +52,9 @@ else
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>
@@ -74,12 +75,12 @@ else
 if(!isset($errortext))
 {
     /* Get relevant information about the category from database */
-    $query = "SELECT name, explanatory_text FROM categories
+    $query = "SELECT name, day_id, explanatory_text FROM categories
         WHERE id=?";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    $stmt->bind_result($category_name, $explanatory_text);
+    $stmt->bind_result($category_name, $day_id, $explanatory_text);
     $stmt->fetch();
     $stmt->close();
     $query = "SELECT id, clue_text, point_value, wrong_point_value FROM clues
@@ -96,6 +97,19 @@ if(!isset($errortext))
             $wrong_point_value, $clue_text);
     }
     $stmt->close();
+    $query = "SELECT days.id, days.name FROM days LEFT JOIN rounds
+        ON days.round_id=rounds.id
+        ORDER BY rounds.sequence ASC, days.sequence ASC";
+    $stmt = $mysqli->prepare($query);
+    $stmt->execute();
+    $stmt->bind_result($d_id, $d_name);
+    $days = array();
+    while($stmt->fetch())
+    {
+        $days[$d_id] = $d_name;
+    }
+    $stmt->close();
+    $mysqli->close();
     echo "<h1>Editing category $id</h1>";
     echo '<form action="submit_edited_category.php" method="post">';
     echo '<table><tr><th>Category ID</th>';
@@ -104,6 +118,17 @@ if(!isset($errortext))
     echo '<tr><th>Category name</th>';
     printf('<td><input type="text" size="100" name="catname" value="%s"'.
         '/></td></tr>', $category_name);
+    echo '<tr><th>Category day</th>';
+    echo '<td><select name="dayid" id="dayidselector">';
+    printf('<option value="0" %s>No day</option>',
+        is_null($d_id) ? 'selected="selected"' : '');
+    foreach($days as $d_id => $d_name)
+    {
+        printf('<option value="%d" %s>%s</option>', $d_id,
+            $d_id == $day_id ? 'selected="selected"' : '',
+            $d_name);
+    }
+    echo '</select></td></tr>';
     echo '<tr><th>Explanatory text</th>';
     printf('<td><textarea class="fullwidthinput"'.
         'rows="%d" cols="%d" name="explanatory">%s</textarea></td></tr>',

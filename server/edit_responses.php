@@ -66,10 +66,9 @@ if(!isset($errortext))
 {
     $query = "SELECT id, response_text, correct FROM responses WHERE clue_id=?
         UNION SELECT 0, REPLACE(pr.response_text, '.', '\\\\.'), NULL FROM 
-        (SELECT * FROM player_responses WHERE clue_id=?) AS pr
-        LEFT JOIN responses AS r ON (pr.clue_id = r.clue_id AND
-        pr.response_text REGEXP r.response_text)
-        WHERE r.response_text IS NULL";
+        grades INNER JOIN player_responses AS pr ON
+        grades.clue_id = pr.clue_id AND grades.player_id = pr.player_id
+        WHERE grades.clue_id = ? AND grade IS NULL";
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("ii", $id, $id);
     $stmt->execute();
@@ -92,11 +91,43 @@ if(!isset($errortext))
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>Editing responses...</title>
+<script>
+function add_blanks()
+{
+    var x = document.getElementById('gradetable');
+    var rows = x.getElementsByTagName('tr');
+    var last_row = rows[rows.length - 1];
+    var last_id = last_row.id;
+    var id = 0;
+    var result = /^addedresponse(\d+)$/i.exec(last_id);
+    if(result)
+    {
+        id = parseInt(result[1]) + 1;
+    }
+    else
+    {
+        id = 1;
+    }
+    var new_row = document.createElement('tr');
+    new_row.innerHTML = 
+        '<td><input type="text" maxlength="65535" name="addedresponsetext' +
+        id + '"' + ' value="" /' + '></td>' +
+        '<input type="radio" name="addedresponsegrade' + id +
+        '" value="correct"/' + '>Correct' +
+        '<input type="radio" name="addedresponsegrade' + id +
+        '" value="incorrect"/' + '>Incorrect' +
+        '<input type="radio" name="addedresponsegrade' + id +
+        '" value="ignore"' + 'checked="checked" /' + '>Do not add</' + 'td>';
+    new_row.id = "addedresponse" + id;
+    x.appendChild(new_row);
+};
+</script>
 </head>
 <body>
 <?php
@@ -116,11 +147,11 @@ else
     echo '</table>';
     echo '<form action="update_responses.php" method="post">';
     printf('<input type="hidden" name="id" value="%d" />', $id);
-    echo '<table>';
+    echo '<table id="gradetable">';
     echo '<tr><th>Response</th><th>Grading</th></tr>';
     foreach($resp_texts as $resp_id => $resp_text)
     {
-        echo '<tr>';
+        printf('<tr id="response%d">', $resp_id);
         printf('<td><input type="text" maxlength="65535" '.
             'name="responsetext%d" value="%s" /></td>', $resp_id, $resp_text);
         echo '<td>';
@@ -139,7 +170,7 @@ else
     }
     foreach($ungraded_resp_texts as $number => $resp_text)
     {
-        echo '<tr>';
+        printf('<tr id="newresponse%d">', $number);
         printf('<td><input type="text" maxlength="65535" '.
             'name="newresponsetext%d" value="%s" /></td>', $number,
             $resp_text);
@@ -148,10 +179,14 @@ else
             'value="correct"/>Correct', $number);
         printf('<input type="radio" name="newresponsegrade%d" '.
             'value="incorrect"/>Incorrect', $number);
+        printf('<input type="radio" name="newresponsegrade%d" '.
+            'value="ignore" checked="checked" />Do not add', $number);
         echo '</td>';
         echo '</tr>';
     }
     echo '</table>';
+    echo '<button type="button" onclick="add_blanks()">';
+    echo 'Add more response blanks</button>';
     echo '<button type="submit">Submit changes</button>';
     echo '</form>';
 }

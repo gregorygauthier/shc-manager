@@ -23,6 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
+
 do
 {
     $mysqli = connect_mysql();
@@ -31,60 +32,26 @@ do
         $errortext = "Could not connect to database.";
         break;
     }
-
     $mysqli->query("USE $mysql_dbname;");
 
-    $query = "SELECT COUNT(*) FROM players WHERE username=?";
-
+    $query = "SELECT id, username FROM players ORDER BY username ASC";
     $stmt = $mysqli->prepare($query);
-    
     if(!$stmt)
     {
-        $errortext = "Could not create prepared statement.";
+        $errortext = "Could not prepare statement";
+        $mysqli->close();
         break;
     }
-
-    $stmt->bind_param('s', $_POST['name']);
-
     $stmt->execute();
-
-    $stmt->bind_result($in_use);
-    
-    $stmt->fetch();
-    
-    if($in_use)
+    $stmt->bind_result($id, $username);
+    $users = array();
+    while($stmt->fetch())
     {
-        $errortext = "Username is already in use.";
-        break;
+        $users[$id] = $username;
     }
-    
     $stmt->close();
-    
-    $query = "INSERT INTO players (username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
-    
-    $stmt = $mysqli->prepare($query);
-    
-    if(!$stmt)
-    {
-        $errortext = "Could not create prepared statement.";
-        break;
-    }
-    
-    $teen = (isset($_POST["teen"]));
-    $college = (isset($_POST["college"]));
-    $atb = (isset($_POST["atb"]));
-    $rookie = (isset($_POST["rookie"]));
-    
-    $stmt->bind_param('siiii', $_POST['name'], $teen, $college, $atb, $rookie);
-    
-    $stmt->execute();
-    
-    $stmt->close();
-    
     $mysqli->close();
-}
-while(false);
+} while (false);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -92,26 +59,78 @@ while(false);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title><?php
-if(isset($errortext))
-{
-    echo "Error adding user";
-}
-else
-{
-    echo "User added successfully";
-}
-?></title>
-</head>
-<body>
+<title>
 <?php
 if(isset($errortext))
 {
-    echo "<p class=\"error\">$errortext</p>";
+    echo "Error editing players";
 }
 else
 {
-    echo "<p>Successfully added user ". $_POST['name']." to database!</p>";
+    echo "Edit player";
+}
+?>
+</title>
+<?php
+if(!isset($errortext))
+{
+    echo <<<SCRIPT
+<script>
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange=function()
+{
+    if (xmlhttp.readyState==4 && xmlhttp.status == 200)
+    {
+        document.getElementById("player").innerHTML =
+            xmlhttp.responseText;
+    }
+};
+function update_player()
+{
+    var idx = document.getElementById("playerselector").selectedIndex;
+    var playerId = document.getElementById("playerselector").
+        getElementsByTagName("option")[idx].getAttribute("value");
+    if(playerId == 0)
+    {
+        document.getElementById("player").innerHTML = '';
+    }
+    else
+    {
+        // AJAX time!
+        
+        xmlhttp.open("GET","get_player.php?id="+playerId, true);
+        xmlhttp.send();
+    }
+};
+</script>
+SCRIPT;
+}
+?>
+</head>
+<body<?php if(!isset($errortext))
+{
+    echo ' onload="update_player()"';
+}?>
+>
+<?
+if(isset($errortext))
+{
+    displayError($errortext);
+}
+else
+{
+    echo '<h1>Edit user</h1>';
+    echo '<form action="submit_edited_player.php" method="post">';
+    echo '<select id="playerselector" name="playerid"'.
+        ' onchange="update_player()">';
+    echo '<option value="0" selected="selected">Select a player...</option>';
+    foreach($users as $id => $username)
+    {
+        printf('<option value="%d">%s</option>', $id, $username);
+    }
+    echo '</select>';
+    echo '<div id="player"></div>';
+    echo '</form>';
 }
 footer();
 ?>

@@ -37,7 +37,26 @@ else
     $success = auth($_POST['username'], $_POST['password']);
     if(!$success)
     {
-        $errortext = "The username/password combination is invalid.";
+        $mysqli = connect_mysql();
+        $mysqli->query("USE $mysql_dbname;");
+        $query = "SELECT COUNT(*) FROM users WHERE username=?";
+        $stmt = $mysqli->prepare($query);
+        $stmt->bind_param('s', $_POST['username']);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        if($count > 0)
+        {
+            $errortext = "The password provided is incorrect.";
+        }
+        else
+        {
+            $errortext = sprintf('No account exists with username '.
+                '<span class="username">%s</span>.', $_POST['username']);
+        }
+        $stmt->close();
+        $mysqli->close();
+        // $errortext = "The username/password combination is invalid.";
     }
     else
     {
@@ -47,8 +66,9 @@ else
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title><?php

@@ -23,68 +23,72 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
+
 do
 {
+    if(!isset($_POST['playerid']) or is_null($_POST['playerid']))
+    {
+        $errortext = "No player id provided.";
+        break;
+    }
+    $id = $_POST['playerid'];
+    if(!isset($_POST['name']) or is_null($_POST['name']))
+    {
+        $errortext = "No username provided.";
+        break;
+    }
+    $username = $_POST['name'];
     $mysqli = connect_mysql();
     if(!$mysqli)
     {
         $errortext = "Could not connect to database.";
         break;
     }
-
     $mysqli->query("USE $mysql_dbname;");
-
-    $query = "SELECT COUNT(*) FROM players WHERE username=?";
-
+    $query = "SELECT COUNT(*) FROM players WHERE username=? AND
+        id <> ?";
     $stmt = $mysqli->prepare($query);
-    
     if(!$stmt)
     {
-        $errortext = "Could not create prepared statement.";
+        $errortext = "Could not prepare statement.";
+        $mysqli->close();
         break;
     }
-
-    $stmt->bind_param('s', $_POST['name']);
-
+    $stmt->bind_param('si', $username, $id);
     $stmt->execute();
-
-    $stmt->bind_result($in_use);
-    
+    $stmt->bind_result($count);
     $stmt->fetch();
-    
-    if($in_use)
+    if($count > 0)
     {
-        $errortext = "Username is already in use.";
+        $errortext = "Username already in use.";
+        $stmt->close();
+        $mysqli->close();
         break;
     }
-    
     $stmt->close();
-    
-    $query = "INSERT INTO players (username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
-    
+    $query = "UPDATE players SET teen_eligible=?, college_eligible=?,
+        atb_eligible=? WHERE id=?";
     $stmt = $mysqli->prepare($query);
-    
     if(!$stmt)
     {
-        $errortext = "Could not create prepared statement.";
+        $errortext = "Could not prepare statement.";
+        $mysqli->close();
         break;
     }
-    
-    $teen = (isset($_POST["teen"]));
-    $college = (isset($_POST["college"]));
-    $atb = (isset($_POST["atb"]));
-    $rookie = (isset($_POST["rookie"]));
-    
-    $stmt->bind_param('siiii', $_POST['name'], $teen, $college, $atb, $rookie);
-    
+    $teen = (isset($_POST['teen']) and $_POST['teen'] == 'yes');
+    $college = (isset($_POST['college']) and $_POST['college'] == 'yes');
+    $atb = (isset($_POST['atb']) and $_POST['atb'] == 'yes');
+    $stmt->bind_param('iiii', 
+        $teen, $college, $atb, $id);
     $stmt->execute();
-    
+    if($stmt->errno)
+    {
+        $errortext = sprintf("Error updating database (number %s).",
+            $stmt->errno);
+    }
     $stmt->close();
-    
     $mysqli->close();
-}
-while(false);
+} while(false);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,23 +99,26 @@ while(false);
 <title><?php
 if(isset($errortext))
 {
-    echo "Error adding user";
+    echo 'Error editing player';
 }
 else
 {
-    echo "User added successfully";
+    echo 'Player successfully edited';
 }
-?></title>
+?>
+</title>
 </head>
 <body>
 <?php
 if(isset($errortext))
 {
-    echo "<p class=\"error\">$errortext</p>";
+    echo '<h1>Error editing player</h1>';
+    displayError($errortext);
 }
 else
 {
-    echo "<p>Successfully added user ". $_POST['name']." to database!</p>";
+    echo '<h1>Successful player update!</h1>';
+    echo '<p>Player information successfully updated!</p>';
 }
 footer();
 ?>

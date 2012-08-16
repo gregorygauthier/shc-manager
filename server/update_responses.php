@@ -80,13 +80,29 @@ else
                 $stmt->close();
             }
         }
+        elseif(preg_match('/^addedresponsetext([0-9]+)$/', $key, $matches))
+        {
+            $number = $matches[1];
+            if(!isset($_POST["addedresponsegrade$number"]))
+                continue;
+            $grade = $_POST["addedresponsegrade$number"];
+            if($grade == 'correct' or $grade == 'incorrect')
+            {
+                $correct = ($grade == 'correct');
+                $stmt = $mysqli->prepare($insert_query);
+                $stmt->bind_param('isi', $id, $value, $correct);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
     }
     $mysqli->close();
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>

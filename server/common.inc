@@ -30,6 +30,7 @@ $response_cols = 40;
 
 define("UNRESTRICTED", 0);
 define("RESTRICTED", 1);
+define("ADMIN", 2);
 
 function startpage($access){
     global $logged_in_username;
@@ -37,11 +38,17 @@ function startpage($access){
     if(isset($_SESSION['username']))
     {
         $logged_in_username = $_SESSION['username'];
+        if($access == ADMIN and $logged_in_username != 'admin')
+        {
+            header('Location: unauthorized_admin.php');
+            exit;
+            return false;
+        }
         return true;
     }
     else
     {
-        if($access == RESTRICTED)
+        if($access == RESTRICTED or $access == ADMIN)
         {
             header('Location: unauthorized.php');
             exit;
@@ -105,13 +112,14 @@ function navbar()
     $places['Standings'] = 'standings.php';
     $places['Calendar'] = 'calendar.php';
     $places['Category list'] = 'category_list.php';
-    $places['View responses'] = 'responses.php';
+    $places['View/input responses'] = 'responses.php';
     if(isset($logged_in_username))
     {
-        $places['Grade responses'] = 'edit_responses.php';
+        /*$places['Grade responses'] = 'edit_responses.php';*/
         $places['Write category'] = 'write_category.php';
-        $places['Add user'] = 'new_player.php';
+        $places['Add player'] = 'new_player.php';
     }
+    $places['Help'] = 'help.php';
     echo '<nav><ul class="navbar">';
     foreach($places as $name => $href)
     {
@@ -123,7 +131,8 @@ function navbar()
 function disclaimer()
 {
     echo '<p>The Summer Hiatus Challenge is an unofficial fan-run competition.
-        Neither Sony Pictures Entertainment nor <i>Jeopardy!</i> have
+        Neither Sony Pictures Entertainment, CBS Television Distribution
+        nor <i>Jeopardy!</i> have
         endorsed, sponsored, or affiliated with
         this competition or this website.  All trademarks
         are the property of their respective owners and are being used on
@@ -167,5 +176,146 @@ function auth($username, $password)
     }
 }
 
+function get_standings($day_id, $round_id)
+{
+    global $mysql_dbname, $site_url;
+    $buffer = '';
+    $mysqli = connect_mysql();
+    $mysqli->query("USE $mysql_dbname;");
 
+    $overall_query = "SELECT username, teen_eligible, college_eligible,
+        atb_eligible, rookie_eligible, overall_score, overall_ungraded
+        FROM overall_scores
+        INNER JOIN players ON overall_scores.player_id = players.id
+        ORDER BY overall_score DESC, username ASC";
+
+    $round_query = "SELECT username, teen_eligible, college_eligible,
+        atb_eligible, rookie_eligible, round_score, round_ungraded
+        FROM round_scores
+        INNER JOIN players ON round_scores.player_id = players.id
+        WHERE round_id = ? ORDER BY round_score DESC, username ASC";
+
+    $day_query = "SELECT username, teen_eligible, college_eligible,
+        atb_eligible, rookie_eligible, daily_score, daily_ungraded
+        FROM daily_scores
+        INNER JOIN players ON daily_scores.player_id = players.id
+        WHERE day_id = ?
+        ORDER BY daily_score DESC, username ASC";
+
+    if(!is_null($day_id) and $day_id > 0)
+    {
+        $stmt = $mysqli->prepare($day_query);
+        $stmt->bind_param('i', $day_id);
+    }
+    elseif(!is_null($round_id) and $round_id > 0)
+    {
+        $stmt = $mysqli->prepare($round_query);
+        $stmt->bind_param('i', $round_id);
+    }
+    else // overall standings
+    {
+        $stmt = $mysqli->prepare($overall_query);
+    }
+    $stmt->execute();
+    $stmt->bind_result($username, $teen_eligible, $college_eligible,
+        $atb_eligible, $rookie_eligible, $score, $num_ungraded);
+
+    $usernames = array();
+    $teen_eligible_stats = array();
+    $college_eligible_stats = array();
+    $atb_eligible_stats = array();
+    $rookie_eligible_stats = array();
+    $scores = array();
+    $ungradeds = array();
+
+    while($stmt->fetch())
+    {
+        $usernames[] = $username;
+        $teen_eligible_stats[] = $teen_eligible;
+        $college_eligible_stats[] = $college_eligible;
+        $atb_eligible_stats[] = $atb_eligible;
+        $rookie_eligible_stats[] = $rookie_eligible;
+        $scores[] = $score;
+        $ungradeds[] = $num_ungraded;
+    }
+
+    $stmt->close();
+    if(!is_null($day_id) and $day_id > 0)
+    {
+        $query = "SELECT name FROM days WHERE id = ?";
+        $stmt = $mysqli->prepare($query);
+        $stmt->bind_param('i', $day_id);
+        $stmt->execute();
+        $stmt->bind_result($dayname);
+        $stmt->fetch();
+        $buffer .= sprintf ('<h2>Day results for %s</h2>', $dayname);
+        $stmt->close();
+    }
+    elseif(!is_null($round_id) and $round_id > 0)
+    {
+        $query = "SELECT name FROM rounds WHERE id = ?";
+        $stmt = $mysqli->prepare($query);
+        $stmt->bind_param('i', $round_id);
+        $stmt->execute();
+        $stmt->bind_result($roundname);
+        $stmt->fetch();
+        $buffer .= sprintf ('<h2>Round results for %s</h2>', $roundname);
+        $stmt->close();
+    }
+    else // overall standings
+    {
+        $buffer .= '<h2>Overall results</h2>';
+    }
+    if(!isset($errortext))
+    {
+        $link = $site_url.'/standings.php';
+        if(!is_null($day_id) and $day_id > 0)
+        {
+            $link .= sprintf('?dayid=%d', $day_id);
+        }
+        elseif(!is_null($round_id) and $round_id > 0)
+        {
+            $link .= sprintf('?roundid=%d', $round_id);
+        }
+        
+        $buffer.= sprintf(<<<HTML
+<p>You can bookmark the following link to these particular results:
+<a href="%s">%s</a>.</p>
+HTML
+, $link, $link);
+        $buffer.=<<<HTML
+<table>
+<tr><th>Rank</th><th>Player</th><th>Teen</th><th>College</th>
+<th>ATB</th><th>Rookie</th><th>Score</th><th>Ungraded</th></tr>
+HTML;
+        $records_printed = 0;
+        foreach($usernames as $key => $value)
+        {
+            $records_printed++;
+            if(!isset($lastscore) or $scores[$key] != $lastscore)
+            {
+                $rank = $records_printed;
+                $lastscore = $scores[$key];
+            }
+            $buffer .= sprintf('<tr class="%s"><td class="rank">%d</td>'.
+                '<td>%s</td><td class="marker">%s</td>'.
+                '<td class="marker">%s</td><td class="marker">%s</td>'.
+                '<td class="marker">%s</td>'.
+                '<td class="score">%d</td><td class="score">%s</td></tr>',
+                $records_printed % 2 ? "odd" : "even", $rank,
+                $value, $teen_eligible_stats[$key] ? 'T' : '',
+                $college_eligible_stats[$key] ? 'C' : '',
+                $atb_eligible_stats[$key] ? 'A' : '',
+                $rookie_eligible_stats[$key] ? 'R' : '',
+                $scores[$key],
+                $ungradeds[$key] ? $ungradeds[$key] : '');
+        }
+        $buffer .= '</table>';
+    }
+    else
+    {
+        return sprintf('<p class="error">%s</p>', $errortext);
+    }
+    return $buffer;
+}
 ?>

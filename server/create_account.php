@@ -22,8 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
-
+startpage(ADMIN);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,21 +30,17 @@ startpage(RESTRICTED);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Add new player</title>
+<title>Create account</title>
 </head>
 <body>
-<form action="add_player.php" method="post">
-<p><label for="namefield">Player name: </label>
-<input type="text" id="namefield" maxlength="50" name="name" /></p>
-<p><input type="checkbox" id="teencheck" name="teen" value="yes" />
-<label for="teencheck">Teen eligible</label></p>
-<p><input type="checkbox" id="collegecheck" name="college" value="yes" />
-<label for="collegecheck">College eligible</label></p>
-<p><input type="checkbox" id="atbcheck" name="atb" value="yes" />
-<label for="atbcheck">ATB eligible</label></p>
-<p><input type="checkbox" id="rookiecheck" name="rookie" value="yes" />
-<label for="rookiecheck">Rookie eligible</label></p>
-<button type="submit">Submit</button>
+<h1>Create account</h1>
+<form action="submit_created_account.php" method="post">
+<label for="usernamefield">Username:</label>
+<input id="usernamefield" type="text" maxlength="255" name="username" />
+<label for="emailfield">E-mail:</label>
+<input id="emailfield" type="text" maxlength="255" name="email" />
+<p>A password will be randomly generated and sent to the e-mail provided.<p>
+<button type="submit">Create account</button>
 </form>
 <?php footer();?>
 </body>

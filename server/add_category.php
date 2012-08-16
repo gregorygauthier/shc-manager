@@ -25,8 +25,9 @@ require_once('common.inc');
 startpage(RESTRICTED);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>Adding category to database...</title>
@@ -50,7 +51,7 @@ $stmt->bind_param("ssii", $name, $explanatory_text, $sequence, $day_id);
 
 $name = strip_tags($_POST["categoryname"], '<b><i><u>');
 $explanatory_text = strip_tags($_POST["explanatory"], '<a><b><i><u>');
-if(is_null($_POST["dayid"]))
+if(is_null($_POST["dayid"]) or $_POST["dayid"] == 0)
 {
     $day_id = null;
     $sequence = 1;
@@ -91,16 +92,20 @@ for($i = 1; $i <= 5; $i++)
     $stmt->close();
 }
 
+$query = "INSERT INTO responses (clue_id, response_text, correct)
+    VALUES (?, ?, ?)";
 for($i = 1; $i <= 5; $i++)
 {
-    $query = "INSERT INTO responses".
-        " (clue_id, response_text, correct) VALUES (?, ?, ?)";
-    $stmt = $mysqli->prepare($query);
-    $correct = 1;
-    $stmt->bind_param("isi", $clue_ids[$i],
-        $_POST["response$i"], $correct);
-    $stmt->execute() or die("Could not add response $i to database.");
-    $stmt->close();
+    $responses = explode("\n", $_POST["response$i"]);
+    foreach($responses as $response)
+    {
+        $stmt = $mysqli->prepare($query);
+        $correct = 1;
+        $stmt->bind_param("isi", $clue_ids[$i],
+            $response, $correct);
+        $stmt->execute() or die("Could not add response $i to database.");
+        $stmt->close();
+    }
 }
 $mysqli->close();
 echo "Successfully added the category, clues, and responses!";

@@ -53,13 +53,23 @@ do
 } while(false);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>Current Standings</title>
 <script>
-var xmlhttp = new XMLHttpRequest();
+// Do a test for Internet Explorer 6, against my better judgment
+var xmlhttp = null;
+if(window.XMLHttpRequest)
+{
+    xmlhttp = new XMLHttpRequest();
+}
+else
+{
+    xmlhttp = new ActiveXObject('MSXML2.XMLHTTP.3.0');
+}
 xmlhttp.onreadystatechange=function()
 {
     if (xmlhttp.readyState==4 && xmlhttp.status == 200)
@@ -89,13 +99,61 @@ function update_standings()
     xmlhttp.open("GET","get_standings.php"+getvars, true);
     xmlhttp.send();
 };
+function change_button()
+{
+    var x = document.getElementById('reloadbutton');
+    x.setAttribute("type", "button");
+    x.setAttribute("onclick", "update_standings()");
+    x.innerHTML = "Refresh";
+};
 </script>
 </head>
-<body onload="update_standings()">
+<body onload="change_button()">
 <h1>Standings</h1>
+<form action="standings.php" method="get">
 <select id="selector" name="selector" onchange="update_standings()">
-<option value="o" selected="selected">Overall standings</option>
 <?php
+if(isset($_GET['selector']))
+{
+    if(preg_match('/^([ord])(\d*)$/', $_GET['selector'], $matches))
+    {
+        if($matches[1] == 'r')
+        {
+            $day_get = null;
+            $round_get = $matches[2];
+        }
+        elseif($matches[1] == 'd')
+        {
+            $day_get = $matches[2];
+            $round_get = null;
+        }
+        else
+        {
+            $day_get = null;
+            $round_get = null;
+        }
+    }
+    else
+    {
+        $day_get = null;
+        $round_get = null;
+    }
+}
+else
+{
+    $day_get = (isset($_GET['dayid']) ? intval($_GET['dayid']) : null);
+    if(is_null($day_id))
+    {
+        $round_get =
+            (isset($_GET['roundid']) ? intval($_GET['roundid']) : null);
+    }
+    else
+    {
+        $round_get = null;
+    }
+}
+printf('<option value="o" %s>Overall standings</option>',
+    (is_null($day_get) and is_null($round_get)) ? 'selected="selected"' : '');
 $query = "SELECT id, name FROM rounds ORDER BY sequence ASC";
 $stmt = $mysqli->prepare($query);
 $stmt->execute();
@@ -131,27 +189,34 @@ while($stmt->fetch())
 $stmt->close();
 foreach($rounds as $roundid => $roundname)
 {
-    printf('<option value="r%d"> &gt; %s</option>', $roundid, $roundname);
+    printf('<option value="r%d" %s> &gt; %s</option>', $roundid,
+        (!is_null($round_get) and $round_get == $roundid) ?
+        'selected="selected"' : '', $roundname);
     foreach($round_days[$roundid] as $dayid)
     {
-        printf('<option value="d%d"> &gt; &gt; %s</option>',
-            $dayid, $days[$dayid]);
+        printf('<option value="d%d" %s> &gt; &gt; %s</option>',
+            $dayid,
+            (!is_null($day_get) and $day_get == $dayid) ?
+            'selected="selected"' : '',
+            $days[$dayid]);
     }
 }
 foreach($roundless_days as $dayid)
 {
-    printf('<option value="d%d"> &gt; &gt; %s</option>',
-        $dayid, $days[$dayid]);
+    printf('<option value="d%d" %s> &gt; &gt; %s</option>',
+        $dayid,
+        (!is_null($day_get) and $day_get == $dayid) ?
+        'selected="selected"' : '',
+        $days[$dayid]);
 }
 $mysqli->close();
 ?>
 </select>
+<button id="reloadbutton" type="submit">Reload</button>
+</form>
 <div id="standings">
 <?php
-if(isset($errortext))
-{
-    displayError($errortext);
-}
+echo get_standings($day_get, $round_get);
 ?>
 </div>
 <p class="footnote">Note that scores are tentative and unofficial.

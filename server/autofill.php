@@ -23,6 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
+
 do
 {
     $mysqli = connect_mysql();
@@ -31,60 +32,27 @@ do
         $errortext = "Could not connect to database.";
         break;
     }
-
     $mysqli->query("USE $mysql_dbname;");
-
-    $query = "SELECT COUNT(*) FROM players WHERE username=?";
-
+    $query = "SELECT days.id, days.name FROM days LEFT JOIN rounds
+    ON days.round_id=rounds.id
+    ORDER BY rounds.sequence ASC, days.sequence ASC";
     $stmt = $mysqli->prepare($query);
-    
     if(!$stmt)
     {
-        $errortext = "Could not create prepared statement.";
+        $errortext = "Could not prepare statement";
+        $mysqli->close();
         break;
     }
-
-    $stmt->bind_param('s', $_POST['name']);
-
     $stmt->execute();
-
-    $stmt->bind_result($in_use);
-    
-    $stmt->fetch();
-    
-    if($in_use)
+    $stmt->bind_result($id, $name);
+    $days = array();
+    while($stmt->fetch())
     {
-        $errortext = "Username is already in use.";
-        break;
+        $days[$id] = $name;
     }
-    
     $stmt->close();
-    
-    $query = "INSERT INTO players (username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
-    
-    $stmt = $mysqli->prepare($query);
-    
-    if(!$stmt)
-    {
-        $errortext = "Could not create prepared statement.";
-        break;
-    }
-    
-    $teen = (isset($_POST["teen"]));
-    $college = (isset($_POST["college"]));
-    $atb = (isset($_POST["atb"]));
-    $rookie = (isset($_POST["rookie"]));
-    
-    $stmt->bind_param('siiii', $_POST['name'], $teen, $college, $atb, $rookie);
-    
-    $stmt->execute();
-    
-    $stmt->close();
-    
     $mysqli->close();
-}
-while(false);
+} while (false)
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -92,28 +60,49 @@ while(false);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title><?php
+<title>
+<?php
 if(isset($errortext))
 {
-    echo "Error adding user";
+    echo 'Error preparing autofill page.';
 }
 else
 {
-    echo "User added successfully";
+    echo 'Autofill';
 }
-?></title>
+?>
+</title>
 </head>
 <body>
 <?php
 if(isset($errortext))
 {
-    echo "<p class=\"error\">$errortext</p>";
+    echo '<h1>Error preparing autofill</h1>';
+    displayError($errortext);
 }
 else
 {
-    echo "<p>Successfully added user ". $_POST['name']." to database!</p>";
+    echo '<hgroup><h1>Autofill</h1>';
+    echo '<h2>With great power comes great responsibility: ';
+    echo 'please be careful!</h2></hgroup>';
+    echo '<form>';
+    echo '<select id="dayselector" name="dayid">';
+    echo '<option value="0">Please select a day...</option>';
+    foreach($days as $id => $name)
+    {
+        printf('<option value="%d">%s</option>', $id, $name);
+    }
+    echo '</select>';
+    echo '<label for="urlfield">URL of daily thread:</label>';
+    echo '<input id="urlfield" name="url" maxlength="255" />';
+    echo '<label for="urlfield">Post number:</label>';
+    echo '<button id="postnumberdecrement" type="button"'.
+        'onclick="decrement_post_number()">-</button>';
+    echo '<input id="postnumberfield" name="postnumber" maxlength="4" />';
+    echo '<button id="postnumberincrement" type="button"'.
+        'onclick="increment_post_number()">+</button>';
+    echo '</form>';
 }
-footer();
 ?>
 </body>
 </html>

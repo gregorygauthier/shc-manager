@@ -40,13 +40,22 @@ else
     {
         $name = $_POST['newdayname'];
     }
-    if(!isset($_POST['newdaydate']) || is_null($_POST['newdaydate']))
+    if(!isset($_POST['newdaydate']) or is_null($_POST['newdaydate']))
     {
         $date = null;
     }
     else
     {
         $date = $_POST['newdaydate'];
+    }
+    if(!isset($_POST['newdayurl']) or is_null($_POST['newdayurl']) or
+        $_POST['newdayurl'] == '')
+    {
+        $url = null;
+    }
+    else
+    {
+        $url = $_POST['newdayurl'];
     }
 }
 if(!isset($errortext))
@@ -60,8 +69,9 @@ if(!isset($errortext))
             break;
         }
         $mysqli->query("USE $mysql_dbname;");
-        $query = "INSERT INTO days (name, round_id, play_date, sequence)
-            VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO days (name, round_id, play_date,
+            sequence, thread_url)
+            VALUES (?, ?, ?, ?, ?)";
         $stmt = $mysqli->prepare($query);
         if(!$stmt)
         {
@@ -69,7 +79,7 @@ if(!isset($errortext))
             $mysqli->close();
             break;
         }
-        $stmt->bind_param('sisi', $name, $round_id, $date, $seq);
+        $stmt->bind_param('sisis', $name, $round_id, $date, $seq, $url);
         $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
             days WHERE round_id = ?";
         $substmt = $mysqli->prepare($subquery);
@@ -98,8 +108,9 @@ if(!isset($errortext))
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title><?php

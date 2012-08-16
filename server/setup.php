@@ -54,7 +54,9 @@ $query = "CREATE TABLE days (
   round_id SMALLINT,
   play_date DATE,
   sequence SMALLINT NOT NULL,
-  FOREIGN KEY (round_id) REFERENCES rounds(id));";
+  thread_url VARCHAR(255),
+  FOREIGN KEY (round_id) REFERENCES rounds(id),
+  INDEX round_id_idx (round_id));";
 
 $mysqli->query($query);
 
@@ -64,7 +66,8 @@ $query = "CREATE TABLE categories (
   explanatory_text TEXT,
   day_id SMALLINT,
   sequence SMALLINT NOT NULL,
-  FOREIGN KEY (day_id) REFERENCES days(id));";
+  FOREIGN KEY (day_id) REFERENCES days(id),
+  INDEX day_id_idx (day_id));";
 
 $mysqli->query($query);
 
@@ -74,7 +77,8 @@ $query = "CREATE TABLE clues (
   category_id SMALLINT,
   point_value SMALLINT,
   wrong_point_value SMALLINT,
-  FOREIGN KEY (category_id) REFERENCES categories(id));";
+  FOREIGN KEY (category_id) REFERENCES categories(id),
+  INDEX category_id_idx (category_id));";
 
 $mysqli->query($query);
 
@@ -83,7 +87,8 @@ $query = "CREATE TABLE responses (
   clue_id MEDIUMINT,
   response_text TEXT,
   correct BOOLEAN,
-  FOREIGN KEY (clue_id) REFERENCES clues(id));";
+  FOREIGN KEY (clue_id) REFERENCES clues(id),
+  INDEX clue_id_idx (clue_id));";
 
 $mysqli->query($query);
 
@@ -92,7 +97,9 @@ $query = "CREATE TABLE players (
   username CHAR(50),
   teen_eligible BOOLEAN,
   college_eligible BOOLEAN,
-  atb_eligible BOOLEAN);";
+  atb_eligible BOOLEAN,
+  rookie_eligible BOOLEAN,
+  INDEX username_idx (username));";
 
 $mysqli->query($query);
 
@@ -102,7 +109,10 @@ $query = "CREATE TABLE player_responses (
   clue_id MEDIUMINT,
   response_text TEXT,
   FOREIGN KEY (player_id) REFERENCES players(id),
-  FOREIGN KEY (clue_id) REFERENCES clues(id));";
+  FOREIGN KEY (clue_id) REFERENCES clues(id),
+  INDEX player_id_idx (player_id),
+  INDEX clue_id_idx (clue_id)
+  UNIQUE player_and_clue_idx (player_id, clue_id));";
 
 $mysqli->query($query);
 
@@ -110,14 +120,16 @@ $query = "CREATE TABLE users (
   id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(255),
   hashed_password CHAR(128),
-  email VARCHAR(255));";
+  email VARCHAR(255),
+  INDEX username_idx (username));";
 
 $mysqli->query($query);
 
 $query = "CREATE VIEW grades AS SELECT
   player_id, pr.clue_id, MAX(correct) AS grade FROM player_responses AS pr
   LEFT JOIN responses AS r on pr.clue_id = r.clue_id AND
-  pr.response_text REGEXP r.response_text WHERE pr.response_text IS NOT NULL
+  pr.response_text REGEXP CONCAT('^', r.response_text, '$')
+  WHERE pr.response_text IS NOT NULL
   AND pr.response_text <> '' GROUP BY pr.clue_id, player_id;";
 
 $mysqli->query($query);

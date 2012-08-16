@@ -31,8 +31,9 @@ require_once('common.inc');
 $isloggedin = startpage(UNRESTRICTED);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <?php
@@ -167,6 +168,8 @@ if(!isset($errortext))
                 if($isloggedin)
                 {
                     printf ('(<a href="edit_clue.php?id=%d">edit</a>) ',
+                        $clue_id);
+                    printf ('(<a href="edit_responses.php?id=%d">grade</a>) ',
                         $clue_id);
                 }
                 printf ('(%d/%d) %s</li>', $pts, $wrong_pts, $cluetext);

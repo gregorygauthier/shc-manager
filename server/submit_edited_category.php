@@ -25,8 +25,9 @@ require_once('common.inc');
 startpage(RESTRICTED);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title>Submitting modified category</title>
@@ -40,13 +41,45 @@ $query = "USE $mysql_dbname;";
 
 $mysqli->query($query);
 
-$query = "UPDATE categories SET name=?, explanatory_text=?
-    WHERE id=?";
+$query = "UPDATE categories SET name=?, explanatory_text=?, day_id=?,
+    sequence=? WHERE id=?";
 
 $stmt = $mysqli->prepare($query);
 
-$stmt->bind_param("ssi", $_POST['catname'], $_POST['explanatory'],
-    $_POST['id']);
+if(!isset($_POST['dayid']) or is_null($_POST['dayid']) or $_POST['dayid'] == 0)
+{
+    $day_id = null;
+}
+else
+{
+    $day_id = $_POST['dayid'];
+}
+
+do
+{
+    $subquery = "SELECT sequence FROM categories WHERE id=? AND day_id=?";
+    $substmt = $mysqli->prepare($subquery);
+    $substmt->bind_param('ii', $_POST['id'], $day_id);
+    $substmt->execute();
+    $substmt->bind_result($sequence);
+    if($substmt->fetch())
+    {
+        $substmt->close();
+        break;
+    }
+    $substmt->close();
+    $subquery = "SELECT 1 + IF(MAX(sequence) IS NULL, 0, MAX(sequence))
+            FROM categories WHERE day_id = ?";
+    $substmt = $mysqli->prepare($subquery);
+    $substmt->bind_param('i', $day_id);
+    $substmt->execute();
+    $substmt->bind_result($sequence);
+    $substmt->fetch();
+    $substmt->close();
+} while(false);
+
+$stmt->bind_param("ssiii", $_POST['catname'], $_POST['explanatory'],
+    $day_id, $sequence, $_POST['id']);
 
 $stmt->execute();
 
@@ -56,10 +89,20 @@ if($stmt->affected_rows)
 }
 else
 {
-    displayError("The category has not changed or could not be updated.");
+    if($stmt->errno)
+    {
+        displayError(sprintf("Error executing statement (error number %d).",
+            $stmt->errno));
+    }
+    else
+    {
+        displayError("The category has not changed.");
+    }
 }
 
 $stmt->close();
+
+$mysqli->close();
 
 footer();
 ?>
