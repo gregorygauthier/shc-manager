@@ -113,7 +113,7 @@ $query = "CREATE TABLE player_responses (
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (clue_id) REFERENCES clues(id),
   INDEX player_id_idx (player_id),
-  INDEX clue_id_idx (clue_id)
+  INDEX clue_id_idx (clue_id),
   UNIQUE player_and_clue_idx (player_id, clue_id));";
 
 $mysqli->query($query);
