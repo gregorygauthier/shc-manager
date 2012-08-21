@@ -99,6 +99,8 @@ $query = "CREATE TABLE players (
   college_eligible BOOLEAN,
   atb_eligible BOOLEAN,
   rookie_eligible BOOLEAN,
+  toc TINYINT,
+  FOREIGN KEY (toc) REFERENCES toc_berths(id),
   INDEX username_idx (username));";
 
 $mysqli->query($query);
@@ -113,6 +115,13 @@ $query = "CREATE TABLE player_responses (
   INDEX player_id_idx (player_id),
   INDEX clue_id_idx (clue_id)
   UNIQUE player_and_clue_idx (player_id, clue_id));";
+
+$mysqli->query($query);
+
+$query = "CREATE TABLE toc_berths (
+  id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  abbreviation VARCHAR(20),
+  description TEXT);"
 
 $mysqli->query($query);
 

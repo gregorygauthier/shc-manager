@@ -71,6 +71,11 @@ footer p
 margin-top: 0px;
 margin-bottom: 0px;
 }
+span.tocsymbol
+{
+border-bottom-width: 1px;
+border-bottom-style: dotted;
+}
 span.username
 {
 font-weight: bold;
