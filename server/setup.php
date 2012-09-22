@@ -44,7 +44,8 @@ $mysqli->query($query);
 $query = "CREATE TABLE rounds (
   id SMALLINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30),
-  sequence SMALLINT NOT NULL);";
+  sequence SMALLINT NOT NULL,
+  is_regular BOOLEAN NOT NULL);";
 
 $mysqli->query($query);
 
@@ -177,7 +178,10 @@ $mysqli->query($query);
 
 $query = "CREATE VIEW overall_scores AS
   SELECT player_id, SUM(score) AS overall_score,
-  SUM(ungraded) AS overall_ungraded FROM scores GROUp BY player_id;";
+  SUM(ungraded) AS overall_ungraded FROM scores
+  INNER JOIN rounds ON scores.round_id = rounds.id
+  WHERE rounds.is_regular = 1
+  GROUP BY player_id;";
 
 $mysqli->query($query);
 

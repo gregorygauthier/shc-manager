@@ -165,6 +165,13 @@ if($isloggedin)
 <label for="newroundnamefield">Name: </label>
 <input type="text" maxlength="30" name="newroundname" id="newroundnamefield"/>
 </p>
+<p>
+<label for="newroundregularcheckbox">
+Regular play (counts towards overall scores)
+</label>
+<input type="checkbox" name="newroundregular" id="newroundregularcheckbox"
+checked="checked"/>
+</p>
 <button type="submit">Create round</button></p>
 </form>
 HTML;

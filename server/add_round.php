@@ -34,7 +34,7 @@ do
 
     $mysqli->query("USE $mysql_dbname;");
 
-    $query = "INSERT INTO rounds (name, sequence) VALUES (?, ?)";
+    $query = "INSERT INTO rounds (name, sequence, is_regular) VALUES (?, ?, ?)";
 
     $stmt = $mysqli->prepare($query);
     if(!$stmt)
@@ -43,7 +43,8 @@ do
         $mysqli->close();
         break;
     }
-    $stmt->bind_param('si', $_POST['newroundname'], $seq);
+    $stmt->bind_param('sii', $_POST['newroundname'], $seq,
+        $_POST['newroundregular'] == 'yes' ? 1 : 0);
 
     $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
         rounds";
