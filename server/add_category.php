@@ -99,10 +99,11 @@ for($i = 1; $i <= 5; $i++)
     $responses = explode("\n", $_POST["response$i"]);
     foreach($responses as $response)
     {
+        $tmp = trim($response);
         $stmt = $mysqli->prepare($query);
         $correct = 1;
         $stmt->bind_param("isi", $clue_ids[$i],
-            $response, $correct);
+            $tmp, $correct);
         $stmt->execute() or die("Could not add response $i to database.");
         $stmt->close();
     }

@@ -44,7 +44,8 @@ foreach($_POST as $key => $value)
         // Mr. Jones -> Mr Jones
         // $1000. -> 1000
         // .14159 -> .14159
-        $tmp = preg_replace('/[^A-Za-z0-9.\s]/', '', $tmp);
+        $tmp = preg_replace('/-/', ' ', $tmp);
+        $tmp = preg_replace('/[^A-Za-z0-9.\/\s]/', '', $tmp);
         $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
         $tmp = preg_replace('/\s+/', ' ', $tmp);
         $tmp = trim($tmp);
