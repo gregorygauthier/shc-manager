@@ -122,7 +122,7 @@ $mysqli->query($query);
 $query = "CREATE TABLE toc_berths (
   id TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   abbreviation VARCHAR(20),
-  description TEXT);"
+  description TEXT);";
 
 $mysqli->query($query);
 
