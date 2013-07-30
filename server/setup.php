@@ -32,10 +32,12 @@ require_once('common.inc');?>
 <?php
 $mysqli = connect_mysql();
 
+/*echo "The database name is $mysql_dbname.";
+
 $query = "CREATE DATABASE $mysql_dbname;";
 
 $mysqli->query($query) or die('<html>Database already created.  If the
-database does not work, please delete it manually and run this script again.</html>');
+database does not work, please delete it manually and run this script again.</html>');*/
 
 $query = "USE $mysql_dbname;";
 
@@ -56,6 +58,7 @@ $query = "CREATE TABLE days (
   play_date DATE,
   sequence SMALLINT NOT NULL,
   thread_url VARCHAR(255),
+  highest_parsed_post SMALLINT DEFAULT -1,
   FOREIGN KEY (round_id) REFERENCES rounds(id),
   INDEX round_id_idx (round_id));";
 

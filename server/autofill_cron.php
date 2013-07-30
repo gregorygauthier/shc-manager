@@ -53,7 +53,7 @@ Additionally, the following report was made prior to exiting:
 REPORT
 , $report): '', microtime(true) - $time);
     echo "<pre>$body</pre>";
-    mail($admin_address, "Error running autofille_cron.php", $body,
+    mail($admin_address, "Error running autofill_cron.php", $body,
         "From:$admin_address\r\n");
     exit(1);
 }
