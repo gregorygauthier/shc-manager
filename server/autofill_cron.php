@@ -300,7 +300,7 @@ STR
                     $tmp = $text;
                     $tmp = html_entity_decode($tmp, ENT_QUOTES);
                     // Bold indicates a good part of an answer
-                    if(1 == preg_match_all('/<b>(.*?)</b>/', $tmp, $matches2))
+                    if(1 == preg_match_all('/<b>(.*?)<\/b>/', $tmp, $matches2))
                     {
                         $tmp = $matches2[1][0];
                     }
