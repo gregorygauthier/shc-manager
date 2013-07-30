@@ -1,5 +1,5 @@
 <?php
-/** Copyright (c) 2012 Gregory Gauthier
+/** Copyright (c) 2012-2013 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -43,8 +43,10 @@ do
         $mysqli->close();
         break;
     }
+    
+    $is_regular_round = ($_POST['newroundregular'] == 'yes' ? 1 : 0);
     $stmt->bind_param('sii', $_POST['newroundname'], $seq,
-        $_POST['newroundregular'] == 'yes' ? 1 : 0);
+        $is_regular_round);
 
     $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
         rounds";
