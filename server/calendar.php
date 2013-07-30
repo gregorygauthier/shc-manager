@@ -170,7 +170,7 @@ if($isloggedin)
 Regular play (counts towards overall scores)
 </label>
 <input type="checkbox" name="newroundregular" id="newroundregularcheckbox"
-checked="checked"/>
+value="yes" checked="checked"/>
 </p>
 <button type="submit">Create round</button></p>
 </form>
