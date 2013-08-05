@@ -141,7 +141,7 @@ $mysqli->query($query);
 $query = "CREATE VIEW grades AS SELECT
   player_id, pr.clue_id, MAX(correct) AS grade FROM player_responses AS pr
   LEFT JOIN responses AS r on pr.clue_id = r.clue_id AND
-  pr.response_text REGEXP CONCAT('^', r.response_text, '$')
+  pr.response_text REGEXP CONCAT('(^', r.response_text, '$)')
   WHERE pr.response_text IS NOT NULL
   AND pr.response_text <> '' GROUP BY pr.clue_id, player_id;";
 
