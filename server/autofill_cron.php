@@ -117,7 +117,8 @@ REPORT
     }
     $clue_ids = array();
     
-    $query = "SELECT id, point_value FROM clues WHERE category_id=?";
+    $query = "SELECT id, point_value FROM clues WHERE category_id=? ORDER BY
+        id ASC LIMIT 5";
     for($i = 1; $i <= 2; $i++)
     {
         $stmt = $mysqli->prepare($query);
@@ -243,7 +244,7 @@ STR
             $posttext = $postbody->find('div.content', 0)->innertext;
             /*printf('<p style="background-color: #CCCCFF">%s</p>',
                 $posttext);*/
-            if(!preg_match("%2[-.:) ](.*?)<br ?/?>.*?".
+            if(!preg_match("%(?:^|[^0-9])2[-.:) ](.*?)<br ?/?>.*?".
                 "4[-.:) ](.*?)<br ?/?>.*?".
                 "6[-.:) ](.*?)<br ?/?>.*?".
                 "8[-.:) ](.*?)<br ?/?>.*?".
@@ -319,7 +320,7 @@ REGEX
                     {
                         $tmp = '';
                     }
-                    if(preg_match('/^(who|what) (is|are) (.*)$/i',
+                    if(preg_match('/^(who|what) (is|are|was|were) (.*)$/i',
                         $tmp, $matches2))
                     {
                         $tmp = $matches2[3];
