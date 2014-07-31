@@ -179,7 +179,7 @@ function auth($username, $password)
 function get_standings($day_id, $round_id)
 {
     global $mysql_dbname, $site_url;
-    $buffer = '';
+    $buffer = array();
     $mysqli = connect_mysql();
     $mysqli->query("USE $mysql_dbname;");
 
@@ -259,7 +259,7 @@ function get_standings($day_id, $round_id)
         $stmt->execute();
         $stmt->bind_result($dayname);
         $stmt->fetch();
-        $buffer .= sprintf ('<h2>Day results for %s</h2>', $dayname);
+        $buffer[] = sprintf ('<h2>Day results for %s</h2>', $dayname);
         $stmt->close();
     }
     elseif(!is_null($round_id) and $round_id > 0)
@@ -270,12 +270,12 @@ function get_standings($day_id, $round_id)
         $stmt->execute();
         $stmt->bind_result($roundname);
         $stmt->fetch();
-        $buffer .= sprintf ('<h2>Round results for %s</h2>', $roundname);
+        $buffer[] = sprintf ('<h2>Round results for %s</h2>', $roundname);
         $stmt->close();
     }
     else // overall standings
     {
-        $buffer .= '<h2>Overall results</h2>';
+        $buffer[] = '<h2>Overall results</h2>';
     }
     if(!isset($errortext))
     {
@@ -289,12 +289,12 @@ function get_standings($day_id, $round_id)
             $link .= sprintf('?roundid=%d', $round_id);
         }
         
-        $buffer.= sprintf(<<<HTML
+        $buffer[] = sprintf(<<<HTML
 <p>You can bookmark the following link to these particular results:
 <a href="%s">%s</a>.</p>
 HTML
 , $link, $link);
-        $buffer.=<<<HTML
+        $buffer[] =<<<HTML
 <table>
 <tr><th>Rank</th><th>Player</th>
 <th>In TOC?</th><th>Teen</th><th>College</th>
@@ -309,7 +309,7 @@ HTML;
                 $rank = $records_printed;
                 $lastscore = $scores[$key];
             }
-            $buffer .= sprintf('<tr class="%s"><td class="rank">%d</td>'.
+            $buffer[] = sprintf('<tr class="%s"><td class="rank">%d</td>'.
                 '<td>%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
@@ -325,12 +325,12 @@ HTML;
                 $scores[$key],
                 $ungradeds[$key] ? $ungradeds[$key] : '');
         }
-        $buffer .= '</table>';
+        $buffer[] = '</table>';
     }
     else
     {
         return sprintf('<p class="error">%s</p>', $errortext);
     }
-    return $buffer;
+    return implode($buffer);
 }
 ?>
