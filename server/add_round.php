@@ -23,54 +23,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
-do
+$name = $_POST['newroundname'];
+$seq = null;
+$is_regular = ($_POST['newroundregular'] == 'yes' ? 1 : 0);
+try
 {
-    $mysqli = connect_mysql();
-    if(!$mysqli)
-    {
-        $errortext = "Could not connect to database.";
-        break;
-    }
-
-    $mysqli->query("USE $mysql_dbname;");
-
-    $query = "INSERT INTO rounds (name, sequence, is_regular) VALUES (?, ?, ?)";
-
-    $stmt = $mysqli->prepare($query);
-    if(!$stmt)
-    {
-        $errortext = "Could not prepare statement.";
-        $mysqli->close();
-        break;
-    }
-    
-    $is_regular_round = ($_POST['newroundregular'] == 'yes' ? 1 : 0);
-    $stmt->bind_param('sii', $_POST['newroundname'], $seq,
-        $is_regular_round);
-
-    $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
-        rounds";
-    $substmt = $mysqli->prepare($subquery);
-    if(!$substmt)
-    {
-        $errortext = "Could not prepare statement.";
-        $mysqli->close();
-        break;
-    }
-    $substmt->execute();
-    $substmt->bind_result($seq);
-    $substmt->fetch();
-    $substmt->close();
-    $seq++;
-
-    $stmt->execute();
-    if(!$stmt->affected_rows)
-    {
-        $errortext = "Could not insert new round into database.";
-    }
-    $stmt->close();
-    $mysqli->close();
-} while(false);
+    Database::add_round($name, $seq, $is_regular);
+    $title = "Round successfully added";
+    $message = "<p>Round successfully added!</p>";
+}
+catch (Exception $e)
+{
+    $title = "Error adding round";
+    $message = sprintf("<p class=\"error\" Error adding round: %s</p>",
+        $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,27 +46,13 @@ do
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title><?php
-if(isset($errortext))
-{
-    echo 'Error adding round';
-}
-else
-{
-    echo 'Round successfully added';
-}
+echo($title);
 ?>
 </title>
 </head>
 <body>
 <?php
-if(isset($errortext))
-{
-    displayError($errortext);
-}
-else
-{
-    echo '<p>Round successfully added!</p>';
-}
+echo($message);
 footer();
 ?>
 </body>

@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once("config.inc");
+require_once("database.inc");
 
 $text_rows = 3;
 $pasteable_rows = 15;
@@ -66,9 +67,9 @@ function connect_mysql(){
 	    $mysql_password);
 
 	if($mysqli->errno){
-		printf("Unable to connect to the database:<br /> %s",
-			$mysqli->errno);
-		exit();
+		throw new Exception(
+		    sprintf("Unable to connect to the database:<br /> %s",
+			$mysqli->errno));
 	}
 	return $mysqli;
 }
@@ -153,26 +154,33 @@ function footer()
 function auth($username, $password)
 {
     global $salt, $mysql_dbname;
-    $mysqli = connect_mysql();
-    $mysqli->query("USE $mysql_dbname;");
-    $query = "SELECT * FROM users WHERE username=? AND hashed_password=?
-        LIMIT 1";
-    $stmt = $mysqli->prepare($query);
-    $hash = hash('sha512', $password.$salt);
-    $stmt->bind_param('ss', $username, $hash);
-    $stmt->execute();
-    $stmt->store_result();
-    if($stmt->num_rows == 0)
+    try
     {
-        $stmt->close();
-        $mysqli->close();
-        return false;
+        $mysqli = connect_mysql();
+        $mysqli->query("USE $mysql_dbname;");
+        $query = "SELECT * FROM users WHERE username=? AND hashed_password=?
+            LIMIT 1";
+        $stmt = $mysqli->prepare($query);
+        $hash = hash('sha512', $password.$salt);
+        $stmt->bind_param('ss', $username, $hash);
+        $stmt->execute();
+        $stmt->store_result();
+        if($stmt->num_rows == 0)
+        {
+            $stmt->close();
+            $mysqli->close();
+            return false;
+        }
+        else
+        {
+            $stmt->close();
+            $mysqli->close();
+            return true;
+        }
     }
-    else
+    catch (Exception $e)
     {
-        $stmt->close();
-        $mysqli->close();
-        return true;
+        die("An error occured.  Details of the error: $e");
     }
 }
 
