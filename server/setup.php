@@ -180,7 +180,7 @@ BEGIN
         IF done THEN
             LEAVE grade_loop;
         END IF;
-        IF ungraded_response_text REGEXP candidate_response THEN
+        IF ungraded_response_text REGEXP CONCAT('^(',candidate_response,')$') THEN
             IF grade THEN
                 CLOSE response_cur;
                 RETURN TRUE;
