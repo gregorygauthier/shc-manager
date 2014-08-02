@@ -23,15 +23,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
-
-// Check parameters to see if they are set, and set variables accordingly
-if(!isset($_POST['newdayround']))
+try
 {
-    $errortext = "No round specified.";
-}
-else
-{
+    if(!isset($_POST['newdayround']))
+    {
+        throw new Exception('No round specified.');
+    }
     $round_id = $_POST['newdayround'];
+    
     if(!isset($_POST['newdayname']))
     {
         $name = '';
@@ -57,54 +56,17 @@ else
     {
         $url = $_POST['newdayurl'];
     }
+    
+    Database::add_day($round_id, $name, $date, $url);
+    
+    $title = "Day successfully added";
+    $message = "<p>Day successfully added!</p>";
 }
-if(!isset($errortext))
+catch (Exception $e)
 {
-    do
-    {
-        $mysqli = connect_mysql();
-        if(!$mysqli)
-        {
-            $errortext = "Could not connect to database.";
-            break;
-        }
-        $mysqli->query("USE $mysql_dbname;");
-        $query = "INSERT INTO days (name, round_id, play_date,
-            sequence, thread_url)
-            VALUES (?, ?, ?, ?, ?)";
-        $stmt = $mysqli->prepare($query);
-        if(!$stmt)
-        {
-            $errortext = "Could not prepare statement.";
-            $mysqli->close();
-            break;
-        }
-        $stmt->bind_param('sisis', $name, $round_id, $date, $seq, $url);
-        $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
-            days WHERE round_id = ?";
-        $substmt = $mysqli->prepare($subquery);
-        if(!$substmt)
-        {
-            $errortext = "Could not prepare substatement.";
-            $stmt->close();
-            $mysqli->close();
-            break;
-        }
-        $substmt->bind_param('i', $round_id);
-        $substmt->execute();
-        $substmt->bind_result($seq);
-        $substmt->fetch();
-        $substmt->close();
-        $seq++;
-        
-        $stmt->execute();
-        if(!$stmt->affected_rows)
-        {
-            $errortext = "Could not insert new day into database.";
-        }
-        $stmt->close();
-        $mysqli->close();
-    } while (false);
+    $title = "Error adding day";
+    $message = sprintf("<p class=\"error\" Error adding round: %s</p>",
+        $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -114,28 +76,14 @@ if(!isset($errortext))
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
 <title><?php
-if(isset($errortext))
-{
-    echo 'Error adding day';
-}
-else
-{
-    echo 'Day successfully added';
-}
+echo $title;
 ?>
 </title>
 </head>
 </head>
 <body>
 <?php
-if(isset($errortext))
-{
-    displayError($errortext);
-}
-else
-{
-    echo '<p>Day successfully added!</p>';
-}
+echo $message;
 footer();
 ?>
 </body>

@@ -89,4 +89,60 @@ class Database
             throw $e;
         }
     }
+    
+    public function add_day($round_id, $name, $date, $url)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "INSERT INTO days (name, round_id, play_date,
+                sequence, thread_url)
+                VALUES (?, ?, ?, ?, ?)";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($stmt->error);
+            }
+            $stmt->bind_param('sisis', $name, $round_id, $date, $seq, $url);
+            $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
+                days WHERE round_id = ?";
+            $substmt = $mysqli->prepare($subquery);
+            if(!$substmt)
+            {
+                throw new Exception($substmt->error);
+            }
+            $substmt->bind_param('i', $round_id);
+            $substmt->execute();
+            $substmt->bind_result($seq);
+            $substmt->fetch();
+            $substmt->close();
+            $seq++;
+            
+            $stmt->execute();
+            if(!$stmt->affected_rows)
+            {
+                throw new Exception("Could not add day to database: {$stmt->error}");
+            }
+            $mysqli->close();
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
 }
