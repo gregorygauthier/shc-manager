@@ -80,7 +80,7 @@ try
 catch(Exception $e)
 {
     $title = "Error adding category";
-    $message = sprintf("<p class=\"error\" Error adding category: %s</p>",
+    $message = sprintf("<p class=\"error\">Error adding category: %s</p>",
         $e->getMessage());
 }
 ?>

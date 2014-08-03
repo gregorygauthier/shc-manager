@@ -65,7 +65,7 @@ try
 catch (Exception $e)
 {
     $title = "Error adding day";
-    $message = sprintf("<p class=\"error\" Error adding day: %s</p>",
+    $message = sprintf("<p class=\"error\">Error adding day: %s</p>",
         $e->getMessage());
 }
 ?>

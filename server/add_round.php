@@ -35,7 +35,7 @@ try
 catch (Exception $e)
 {
     $title = "Error adding round";
-    $message = sprintf("<p class=\"error\" Error adding round: %s</p>",
+    $message = sprintf("<p class=\"error\">Error adding round: %s</p>",
         $e->getMessage());
 }
 ?>
