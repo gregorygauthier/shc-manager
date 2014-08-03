@@ -162,6 +162,14 @@ RETURNS BOOLEAN
 LANGUAGE SQL
 COMMENT 'Grade the response against clue_id'
 BEGIN
+    IF ungraded_response_text IS NULL
+        RETURN NULL;
+    END IF;
+    
+    IF ungraded_response_text=''
+        RETURN NULL;
+    END IF;
+    
     DECLARE candidate_response TEXT;
     DECLARE done BOOLEAN;
     DECLARE grade BOOLEAN;
@@ -242,7 +250,8 @@ $mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysql
 $query = "CREATE VIEW scores AS SELECT player_id, clue_id,
   categories.id AS category_id, days.id AS day_id, rounds.id AS round_id,
   IF(grade IS NULL, 0, IF(grade=1, point_value, wrong_point_value)) AS score,
-  IF(grade IS NULL, 1, 0) AS ungraded FROM player_responses
+  IF(grade IS NULL AND response_text IS NOT NULL AND response_text != '', 1, 0)
+  AS ungraded FROM player_responses
   INNER JOIN clues ON clue_id = clues.id
   LEFT JOIN categories ON clues.category_id = categories.id
   LEFT JOIN days ON categories.day_id = days.id LEFT JOIN
