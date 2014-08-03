@@ -23,6 +23,66 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
+
+try
+{
+    /* Step 1: Add the category */
+    $name = strip_tags($_POST["categoryname"], '<b><i><u>');
+    $explanatory_text = strip_tags($_POST["explanatory"], '<a><b><i><u>');
+    if(is_null($_POST["dayid"]) or $_POST["dayid"] == 0)
+    {
+        $day_id = null;
+    }
+    else
+    {
+        $day_id = $_POST["dayid"];
+    }
+    $cat_id = Database::add_category($name, $explanatory_text, null, $day_id);
+    
+    /* Step 2.  Add the clues */
+    $clue_ids = array();
+
+    $multiplier = ($_POST["point_scheme"] == "second" ? 3 : 2);
+    
+    for($i = 1; $i <= 5; $i++)
+    {
+        $clue_text = strip_tags($_POST["clue$i"], '<a><b><i><u><img><br>');
+        $point_value = $multiplier * $i;
+        $wrong_point_value = -$i;
+        $clue_ids[$i] = Database::add_clue(
+            $clue_text, $cat_id, $point_value, $wrong_point_value);
+    }
+    
+    /* Step 3.  Add the responses */
+    for($i = 1; $i <= 5; $i++)
+    {
+        if (is_null($_POST["response$i"]))
+        {
+            continue;
+        }
+        $raw_response = $_POST["response$i"];
+        if(!trim($raw_response))
+        {
+            continue;
+        }
+        $responses = explode("\n", $_POST["response$i"]);
+        foreach($responses as $response)
+        {
+            $trimmed_response = trim($response);
+            $correct = 1;
+            Database::add_response($clue_id[$i], $trimmed_response, $correct);
+        }
+    }
+    
+    $title = "Category added successfully";
+    $message = "<p>Successfully added the category, clues, and responses!</p>";
+}
+catch(Exception $e)
+{
+    $title = "Error adding category";
+    $message = sprintf("<p class=\"error\" Error adding category: %s</p>",
+        $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -30,87 +90,11 @@ startpage(RESTRICTED);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Adding category to database...</title>
+<title><?php echo $title;?></title>
 </head>
 <body>
 <?php
-$mysqli = connect_mysql();
-
-$query = "USE $mysql_dbname;";
-
-$mysqli->query($query);
-
-
-/* Add the category to the categories table */
-$query = "INSERT INTO categories (name, explanatory_text, sequence, day_id)
-    VALUES (?, ?, ?, ?)";
-
-$stmt = $mysqli->prepare($query);
-
-$stmt->bind_param("ssii", $name, $explanatory_text, $sequence, $day_id);
-
-$name = strip_tags($_POST["categoryname"], '<b><i><u>');
-$explanatory_text = strip_tags($_POST["explanatory"], '<a><b><i><u>');
-if(is_null($_POST["dayid"]) or $_POST["dayid"] == 0)
-{
-    $day_id = null;
-    $sequence = 1;
-}
-else
-{
-    $day_id = $_POST["dayid"];
-    $subquery = "SELECT 1 + IF(MAX(sequence) IS NULL, 0, MAX(sequence))
-        FROM categories WHERE day_id = ?";
-    $substmt = $mysqli->prepare($subquery);
-    $substmt->bind_param('i', $day_id);
-    $substmt->execute();
-    $substmt->bind_result($sequence);
-    $substmt->fetch();
-    $substmt->close();
-}
-
-$stmt->execute() or die ("Could not add category to database.");
-
-$cat_id = $mysqli->insert_id;
-
-$clue_ids = array();
-
-$multiplier = ($_POST["point_scheme"] == "second" ? 3 : 2);
-
-for($i = 1; $i <= 5; $i++)
-{
-    $query = "INSERT INTO clues".
-        " (clue_text, category_id, point_value, wrong_point_value)".
-        " VALUES (?, ?, ?, ?)";
-    $stmt = $mysqli->prepare($query);
-    $point_value = $multiplier * $i;
-    $wrong_point_value = -$i;
-    $stmt->bind_param("siii", strip_tags($_POST["clue$i"],
-        '<a><b><i><u><img><br>'),
-        $cat_id, $point_value, $wrong_point_value);
-    $stmt->execute() or die("Could not add clue $i to database.");
-    $clue_ids[$i] = $mysqli->insert_id;
-    $stmt->close();
-}
-
-$query = "INSERT INTO responses (clue_id, response_text, correct)
-    VALUES (?, ?, ?)";
-for($i = 1; $i <= 5; $i++)
-{
-    $responses = explode("\n", $_POST["response$i"]);
-    foreach($responses as $response)
-    {
-        $tmp = trim($response);
-        $stmt = $mysqli->prepare($query);
-        $correct = 1;
-        $stmt->bind_param("isi", $clue_ids[$i],
-            $tmp, $correct);
-        $stmt->execute() or die("Could not add response $i to database.");
-        $stmt->close();
-    }
-}
-$mysqli->close();
-echo "Successfully added the category, clues, and responses!";
+echo $message;
 footer();
 ?>
 </body>
