@@ -162,14 +162,6 @@ RETURNS BOOLEAN
 LANGUAGE SQL
 COMMENT 'Grade the response against clue_id'
 BEGIN
-    IF ungraded_response_text IS NULL
-        RETURN NULL;
-    END IF;
-    
-    IF ungraded_response_text=''
-        RETURN NULL;
-    END IF;
-    
     DECLARE candidate_response TEXT;
     DECLARE done BOOLEAN;
     DECLARE grade BOOLEAN;
@@ -178,6 +170,14 @@ BEGIN
         SELECT response_text, correct FROM responses AS r
         WHERE r.clue_id=clue_id;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    IF ungraded_response_text IS NULL THEN
+        RETURN NULL;
+    END IF;
+    
+    IF ungraded_response_text='' THEN
+        RETURN NULL;
+    END IF;
     
     SET done = FALSE;
     SET matches_incorrect = FALSE;
