@@ -27,68 +27,25 @@ whose responses are to be edited */
 require_once('common.inc');
 startpage(RESTRICTED);
 
-if(!isset($_GET['id']))
-{
-    $errortext="No category id was specified.";
-}
-else
-{
-    do
-    {
-        $id = $_GET['id'];
-        $mysqli = connect_mysql();
-        $mysqli->query("USE $mysql_dbname;");
-        $query = "SELECT clue_text, name, explanatory_text
-            FROM clues LEFT JOIN categories ON clues.category_id=categories.id
-            WHERE clues.id=?";
-        $stmt = $mysqli->prepare($query);
-        if(!$stmt)
-        {
-            $errortext="Could not create a statement to query the".
-            " categories table.";
-            break;
-        }
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $stmt->bind_result($clue, $catname, $expl);
-        if(!$stmt->fetch())
-        {
-            $errortext="Invalid clue id specified.";
-        }
-        $stmt->close();
-    } while (false);
-}
 
-// Grab all responses that either
-// 1. exist in the responses table or
-// 2. exist in player_responses and do not match any responses
-if(!isset($errortext))
+try
 {
-    $query = "SELECT id, response_text, correct FROM responses WHERE clue_id=?
-        UNION SELECT 0, REPLACE(pr.response_text, '.', '\\\\.'), NULL FROM 
-        grades INNER JOIN player_responses AS pr ON
-        grades.clue_id = pr.clue_id AND grades.player_id = pr.player_id
-        WHERE grades.clue_id = ? AND grade IS NULL";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("ii", $id, $id);
-    $stmt->execute();
-    $stmt->bind_result($resp_id, $resp_text, $correct);
-    $resp_texts = array();
-    $corrects = array();
-    $ungraded_resp_texts = array();
-    while($stmt->fetch())
+    if(!isset($_GET['id']))
     {
-        if($resp_id > 0)
-        {
-            $resp_texts[$resp_id] = $resp_text;
-            $corrects[$resp_id] = $correct;
-        }
-        else
-        {
-            $ungraded_resp_texts[] = $resp_text;
-        }
+        throw new Exception("No clue id was specified");
     }
+    $clue_id = $_GET['id'];
+    $clue = Database::get_clue_by_id($clue_id);
+    $responses = Database::get_responses_for_clue($clue_id, true);
+    $title = "Editing responses";
 }
+catch(Exception $e)
+{
+    $title = "Error occured generating responses";
+    $errortext=sprintf("An error occured while generating the responses: %s",
+        $e->getMessage());
+}
+/*CHANGE EVERYTHING BELOW THIS! */
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -96,7 +53,7 @@ if(!isset($errortext))
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Editing responses...</title>
+<title><?php echo $title;?></title>
 <script>
 function add_blanks()
 {
@@ -137,52 +94,60 @@ if(isset($errortext))
 }
 else
 {
-    printf ('<h1>Editing responses for clue %d</h1>', $id);
+    printf ('<h1>Editing responses for clue %d</h1>', $clue->id);
     echo '<table>';
-    printf ('<tr><th>Category</th><td>%s</td></tr>', $catname);
+    printf ('<tr><th>Category</th><td>%s</td></tr>', $clue->category->name);
+    $expl = $clue->category->explanatory_text;
     printf ('<tr><th>Explanatory text</th><td>%s</td></tr>',
         $expl == '' ? '<i>none</i>' : $expl);
     printf ('<tr><th>Clue text</th><td>%s</td></tr>',
-        $clue);
+        $clue->clue_text);
     echo '</table>';
     echo '<form action="update_responses.php" method="post">';
-    printf('<input type="hidden" name="id" value="%d" />', $id);
+    printf('<input type="hidden" name="id" value="%d" />', $clue->id);
     echo '<table id="gradetable">';
     echo '<tr><th>Response</th><th>Grading</th></tr>';
-    foreach($resp_texts as $resp_id => $resp_text)
+    $ungraded_index = 0;
+    foreach($responses as $response)
     {
-        printf('<tr id="response%d">', $resp_id);
-        printf('<td><input type="text" maxlength="65535" '.
-            'name="responsetext%d" value="%s" /></td>', $resp_id, $resp_text);
-        echo '<td>';
-        printf('<input type="radio" name="responsegrade%d" value="correct"'.
-            ' %s/>Correct', $resp_id, $corrects[$resp_id] == 1 ?
-            'checked="checked"' : '');
-        printf('<input type="radio" name="responsegrade%d" '.
-            'value="incorrect" %s/>Incorrect',
-            $resp_id, $corrects[$resp_id] == 0 ?
-            'checked="checked"' : '');
-        printf('<input type="radio" name="responsegrade%d" '.
-            'value="delete"/>Delete this pattern',
-            $resp_id);
-        echo '</td>';
-        echo '</tr>';
-    }
-    foreach($ungraded_resp_texts as $number => $resp_text)
-    {
-        printf('<tr id="newresponse%d">', $number);
-        printf('<td><input type="text" maxlength="65535" '.
-            'name="newresponsetext%d" value="%s" /></td>', $number,
-            $resp_text);
-        echo '<td>';
-        printf('<input type="radio" name="newresponsegrade%d" '.
-            'value="correct"/>Correct', $number);
-        printf('<input type="radio" name="newresponsegrade%d" '.
-            'value="incorrect"/>Incorrect', $number);
-        printf('<input type="radio" name="newresponsegrade%d" '.
-            'value="ignore" checked="checked" />Do not add', $number);
-        echo '</td>';
-        echo '</tr>';
+        if($response->id)
+        {
+            printf('<tr id="response%d">', $response->id);
+            printf('<td><input type="text" maxlength="65535" '.
+                'name="responsetext%d" value="%s" /></td>',
+                $response->id, $response->response_text);
+            echo '<td>';
+            printf('<input type="radio" name="responsegrade%d" value="correct"'.
+                ' %s/>Correct', $response->id, $response->correct == 1 ?
+                'checked="checked"' : '');
+            printf('<input type="radio" name="responsegrade%d" '.
+                'value="incorrect" %s/>Incorrect',
+                $response->id, $response->correct == 0 ?
+                'checked="checked"' : '');
+            printf('<input type="radio" name="responsegrade%d" '.
+                'value="delete"/>Delete this pattern',
+                $response->id);
+            echo '</td>';
+            echo '</tr>';
+        }
+        else
+        {
+            $ungraded_index++;
+            printf('<tr id="newresponse%d">', $ungraded_index);
+            printf('<td><input type="text" maxlength="65535" '.
+                'name="newresponsetext%d" value="%s" /></td>', $ungraded_index,
+                isset($response->text)? $response->text : '');
+            echo '<td>';
+            printf('<input type="radio" name="newresponsegrade%d" '.
+                'value="correct"/>Correct', $ungraded_index);
+            printf('<input type="radio" name="newresponsegrade%d" '.
+                'value="incorrect"/>Incorrect', $ungraded_index);
+            printf('<input type="radio" name="newresponsegrade%d" '.
+                'value="ignore" checked="checked" />Do not add',
+                $ungraded_index);
+            echo '</td>';
+            echo '</tr>';
+        }
     }
     echo '</table>';
     echo '<button type="button" onclick="add_blanks()">';

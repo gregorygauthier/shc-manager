@@ -27,76 +27,52 @@ post data from edit_clue.php. */
 require_once('common.inc');
 startpage(RESTRICTED);
 
-if(!isset($_POST['id']))
+try
 {
-    $errortext = "No clue id specified.";
-}
-else
-{
-    $id = $_POST['id'];
-    $mysqli = connect_mysql();
-    $mysqli->query("USE $mysql_dbname;");
-    $update_query = "UPDATE responses SET response_text=?, correct=?
-        WHERE id=?";
-    $delete_query = "DELETE FROM responses WHERE id=?";
-    $insert_query = "INSERT INTO responses (clue_id, response_text, correct)
-        VALUES (?, ?, ?)";
+    if(!isset($_POST['id']))
+    {
+        throw new Exception("No clue id specified.");
+    }
+    $clue_id = $_POST['id'];
     foreach($_POST as $key => $value)
     {
         if(preg_match('/^responsetext([0-9]+)$/', $key, $matches))
         {
-            // update or delete an existing response
+            /* Update or delete an existing response */
             $resp_id = $matches[1];
-            // grab the corresponding grade
-            $grade = $_POST["responsegrade$resp_id"];
+            $grade = $_POST["responsegrade{$resp_id}"];
             if($grade == 'correct' or $grade == 'incorrect')
             {
                 $correct = ($grade == 'correct');
-                $stmt = $mysqli->prepare($update_query);
-                $stmt->bind_param('sii', $value, $correct, $resp_id);
-                $stmt->execute();
-                $stmt->close();
+                Database::update_response($resp_id, $value, $correct);
             }
             elseif($grade == 'delete')
             {
-                $stmt = $mysqli->prepare($delete_query);
-                $stmt->bind_param('i', $resp_id);
-                $stmt->execute();
-                $stmt->close();
+                Database::delete_response($resp_id);
             }
         }
-        elseif(preg_match('/^newresponsetext([0-9]+)$/', $key, $matches))
+        elseif(preg_match('/^(new|added)responsetext([0-9]+)$/', $key, $matches))
         {
-            $number = $matches[1];
-            if(!isset($_POST["newresponsegrade$number"]))
+            $new_or_added = $matches[1];
+            $number = $matches[2];
+            if(!isset($_POST["{$new_or_added}responsegrade{$number}"]))
                 continue;
-            $grade = $_POST["newresponsegrade$number"];
+            $grade = $_POST["{$new_or_added}responsegrade{$number}"];
             if($grade == 'correct' or $grade == 'incorrect')
             {
                 $correct = ($grade == 'correct');
-                $stmt = $mysqli->prepare($insert_query);
-                $stmt->bind_param('isi', $id, $value, $correct);
-                $stmt->execute();
-                $stmt->close();
-            }
-        }
-        elseif(preg_match('/^addedresponsetext([0-9]+)$/', $key, $matches))
-        {
-            $number = $matches[1];
-            if(!isset($_POST["addedresponsegrade$number"]))
-                continue;
-            $grade = $_POST["addedresponsegrade$number"];
-            if($grade == 'correct' or $grade == 'incorrect')
-            {
-                $correct = ($grade == 'correct');
-                $stmt = $mysqli->prepare($insert_query);
-                $stmt->bind_param('isi', $id, $value, $correct);
-                $stmt->execute();
-                $stmt->close();
+                Database::add_response($clue_id, $value, $correct);
             }
         }
     }
-    $mysqli->close();
+    $title = "Successfully edited responses";
+    $message = "<p>Successfully edited responses!</p>";
+}
+catch (Exception $e)
+{
+    $title = "Error editing responses";
+    $message = sprintf("<p class=\"error\">Error editing responses: %s</p>",
+        $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -105,29 +81,11 @@ else
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>
-<?php
-if(isset($errortext))
-{
-    echo "Error adding responses";
-}
-else
-{
-    echo "Successfully added responses";
-}
-?>
-</title>
+<title><?php echo $title;?></title>
 </head>
 <body>
 <?php
-if(isset($errortext))
-{
-    displayError($errortext);
-}
-else
-{
-    echo '<p>Responses successfully updated!';
-}
+echo $message;
 footer();
 ?>
 </body>

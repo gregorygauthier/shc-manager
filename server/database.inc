@@ -50,7 +50,7 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('sii', $name, $sequence, $is_regular);
             
@@ -63,7 +63,7 @@ class Database
                 $substmt = $mysqli->prepare($subquery);
                 if(!$substmt)
                 {
-                    throw new Exception($substmt->error);
+                    throw new Exception($mysqli->error);
                 }
                 $substmt->execute();
                 $substmt->bind_result($sequence);
@@ -75,7 +75,7 @@ class Database
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add round to database: {$stmt->error}");
+                throw new Exception("Could not add round to database: {$mysqli->error}");
             }
             $stmt->close();
             $return_val = $mysqli->insert_id;
@@ -114,7 +114,7 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('sisis', $name, $round_id, $date, $seq, $url);
             $subquery = "SELECT IF(MAX(sequence) IS NULL, 0, MAX(sequence)) FROM
@@ -122,7 +122,7 @@ class Database
             $substmt = $mysqli->prepare($subquery);
             if(!$substmt)
             {
-                throw new Exception($substmt->error);
+                throw new Exception($mysqli->error);
             }
             $substmt->bind_param('i', $round_id);
             $substmt->execute();
@@ -134,7 +134,7 @@ class Database
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add day to database: {$stmt->error}");
+                throw new Exception("Could not add day to database: {$mysqli->error}");
             }
             $return_val = $mysqli->insert_id;
             $mysqli->close();
@@ -172,7 +172,7 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('ssii', $name, $explanatory_text, $seq, $day_id);
             if(is_null($day_id))
@@ -186,7 +186,7 @@ class Database
                 $substmt = $mysqli->prepare($subquery);
                 if(!$substmt)
                 {
-                    throw new Exception($substmt->error);
+                    throw new Exception($mysqli->error);
                 }
                 $substmt->bind_param('i', $day_id);
                 $substmt->execute();
@@ -199,7 +199,7 @@ class Database
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add category to database: {$stmt->error}");
+                throw new Exception("Could not add category to database: {$mysqli->error}");
             }
             $stmt->close();
             $return_val = $mysqli->insert_id;
@@ -238,14 +238,14 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('siii', $clue_text, $category_id, $point_value, $wrong_point_value);
             
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add clue to database: {$stmt->error}");
+                throw new Exception("Could not add clue to database: {$mysqli->error}");
             }
             $stmt->close();
             $return_val = $mysqli->insert_id;
@@ -284,14 +284,14 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('isi', $clue_id, $response_text, $correct);
             
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add response to database: {$stmt->error}");
+                throw new Exception("Could not add response to database: {$mysqli->error}");
             }
             $stmt->close();
             $return_val = $mysqli->insert_id;
@@ -328,7 +328,7 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('s', $username);
             $stmt->execute();
@@ -346,14 +346,14 @@ class Database
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
-                throw new Exception($stmt->error);
+                throw new Exception($mysqli->error);
             }
             $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie);
             
             $stmt->execute();
             if(!$stmt->affected_rows)
             {
-                throw new Exception("Could not add player to database: {$stmt->error}");
+                throw new Exception("Could not add player to database: {$mysqli->error}");
             }
             $stmt->close();
             $return_val = $mysqli->insert_id;
@@ -413,7 +413,7 @@ class Database
                 $stmt = $mysqli->prepare($update_query);
                 if(!$stmt)
                 {
-                    throw new Exception($stmt->error);
+                    throw new Exception($mysqli->error);
                 }
                 $stmt->bind_param('sii', $response_text, $player_id, $clue_id);
                 $stmt->execute();
@@ -424,14 +424,14 @@ class Database
                 $stmt = $mysqli->prepare($insert_query);
                 if(!$stmt)
                 {
-                    throw new Exception($stmt->error);
+                    throw new Exception($mysqli->error);
                 }
                 $stmt->bind_param('iis', $player_id, $clue_id, $response_text);
 
                 $stmt->execute();
                 if(!$stmt->affected_rows)
                 {
-                    throw new Exception("Could not add player response to database: {$stmt->error}");
+                    throw new Exception("Could not add player response to database: {$mysqli->error}");
                 }
                 $stmt->close();
                 $return_val = $mysqli->insert_id;
@@ -448,4 +448,422 @@ class Database
             throw $e;
         }
     }
+    
+    public function update_response($response_id, $response_text, $correct)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "UPDATE responses SET response_text = ?, correct = ?
+                WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('sii', $response_text, $correct, $response_id);
+            
+            $stmt->execute();
+            $stmt->close();
+            $mysqli->close();
+            return 1;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function delete_response($response_id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "DELETE FROM responses WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $response_id);
+            
+            $stmt->execute();
+            $stmt->close();
+            $mysqli->close();
+            return 1;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_responses_for_clue($clue_id, $include_ungraded = false)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            if($include_ungraded)
+            {
+                $query = "SELECT r.id, r.response_text, r.correct
+                    FROM responses AS r
+                    WHERE r.clue_id = ?
+                    UNION
+                    SELECT 0, REPLACE(pr.response_text, '.', '\\\\.'), NULL
+                    FROM player_responses AS pr WHERE
+                    pr.clue_id = ? AND
+                    pr.grade IS NULL AND
+                    pr.response_text IS NOT NULL AND
+                    pr.response_text != ''";
+                $stmt = $mysqli->prepare($query);
+                if(!$stmt)
+                {
+                    throw new Exception($mysqli->error);
+                }
+                $stmt->bind_param('ii', $clue_id, $clue_id);
+            }
+            else
+            {
+                $query = "SELECT id, response_text, correct FROM responses
+                    WHERE clue_id = ?";
+                $stmt = $mysqli->prepare($query);
+                if(!$stmt)
+                {
+                    throw new Exception($mysqli->error);
+                }
+                $stmt->bind_param('i', $clue_id);
+            }
+            
+            $stmt->execute();
+            $results = array();
+            $stmt->bind_result($response_id, $response_text, $correct);
+            $clue = Database::get_clue_by_id($clue_id);
+            while($stmt->fetch())
+            {
+                $response = new Response();
+                $response->id = $response_id;
+                $response->response_text = $response_text;
+                $response->correct = $correct;
+                $response->clue = $clue;
+                $results[] = $response;
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $results;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_round_by_id($id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT name, sequence, is_regular FROM rounds
+                WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $id);
+            
+            $stmt->execute();
+            $stmt->bind_result($name, $sequence, $is_regular);
+            if($stmt->fetch())
+            {
+                $result = new Round();
+                $result->id = $id;
+                $result->name = $name;
+                $result->sequence = $sequence;
+                $result->is_regular = $is_regular;
+            }
+            else
+            {
+                $result = null;
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $result;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_day_by_id($id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT name, round_id, play_date, sequence,
+                thread_url, highest_parsed_post FROM days
+                WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $id);
+            
+            $stmt->execute();
+            $stmt->bind_result($name, $round_id, $play_date,
+                $sequence, $thread_url, $highest_parsed_post);
+            if($stmt->fetch())
+            {
+                $result = new Day();
+                $result->id = $id;
+                $result->name = $name;
+                $result->round = Database::get_round_by_id($round_id);
+                $result->play_date = $play_date;
+                $result->sequence = $sequence;
+                $result->thread_url = $thread_url;
+                $result->highest_parsed_post = $highest_parsed_post;
+            }
+            else
+            {
+                $result = null;
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $result;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_category_by_id($id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT name, explanatory_text, day_id, sequence
+                FROM categories
+                WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $id);
+            
+            $stmt->execute();
+            $stmt->bind_result($name, $explanatory_text, $day_id, $sequence);
+            if($stmt->fetch())
+            {
+                $result = new Category();
+                $result->id = $id;
+                $result->name = $name;
+                $result->explanatory_text = $explanatory_text;
+                $result->day = Database::get_day_by_id($day_id);
+                $result->sequence = $sequence;
+            }
+            else
+            {
+                $result = null;
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $result;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_clue_by_id($id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT clue_text, category_id,
+                point_value, wrong_point_value FROM clues
+                WHERE id=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $id);
+            
+            $stmt->execute();
+            $stmt->bind_result($clue_text, $category_id, $point_value, $wrong_point_value);
+            if($stmt->fetch())
+            {
+                $result = new Clue();
+                $result->id = $id;
+                $result->clue_text = $clue_text;
+                $result->category = Database::get_category_by_id($category_id);
+                $result->point_value = $point_value;
+                $result->wrong_point_value = $wrong_point_value;
+            }
+            else
+            {
+                $result = null;
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $result;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+}
+
+class Response
+{
+    public $id;
+    public $clue; /*a Clue struct */
+    public $response_text;
+    public $correct;
+}
+
+class Clue
+{
+    public $id;
+    public $clue_text;
+    public $category; /* a Category struct */
+    public $point_value;
+    public $wrong_point_value;
+}
+
+class Category
+{
+    public $id;
+    public $name;
+    public $explanatory_text;
+    public $day; /* a Day struct */
+    public $sequence;
+}
+
+class Day
+{
+    public $id;
+    public $name;
+    public $round; /* a Round struct */
+    public $play_date;
+    public $sequence;
+    public $thread_url;
+    public $highest_parsed_post;
+}
+
+class Round
+{
+    public $id;
+    public $name;
+    public $sequence;
+    public $is_regular;
 }
