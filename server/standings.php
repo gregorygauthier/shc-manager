@@ -142,7 +142,7 @@ if(isset($_GET['selector']))
 else
 {
     $day_get = (isset($_GET['dayid']) ? intval($_GET['dayid']) : null);
-    if(is_null($day_id))
+    if(is_null($day_get))
     {
         $round_get =
             (isset($_GET['roundid']) ? intval($_GET['roundid']) : null);
