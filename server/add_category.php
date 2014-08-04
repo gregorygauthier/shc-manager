@@ -70,7 +70,7 @@ try
         {
             $trimmed_response = trim($response);
             $correct = 1;
-            Database::add_response($clue_id[$i], $trimmed_response, $correct);
+            Database::add_response($clue_ids[$i], $trimmed_response, $correct);
         }
     }
     

@@ -23,68 +23,32 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(RESTRICTED);
-do
+
+$username = $_POST['name'];
+$teen = (isset($_POST["teen"]));
+$college = (isset($_POST["college"]));
+$atb = (isset($_POST["atb"]));
+$rookie = (isset($_POST["rookie"]));
+try
 {
-    $mysqli = connect_mysql();
-    if(!$mysqli)
+    $return_value = Database::add_player($username, $teen, $college, $atb, $rookie);
+    if($return_value)
     {
-        $errortext = "Could not connect to database.";
-        break;
+        $title = "Player successfully added";
+        $message = "<p>Player successfully added!</p>";
     }
-
-    $mysqli->query("USE $mysql_dbname;");
-
-    $query = "SELECT COUNT(*) FROM players WHERE username=?";
-
-    $stmt = $mysqli->prepare($query);
-    
-    if(!$stmt)
+    else /* adding failed since username was already in use */
     {
-        $errortext = "Could not create prepared statement.";
-        break;
+        $title = "Error adding player";
+        $message = "<p class=\"error\">Error adding player: username already in use</p>";
     }
-
-    $stmt->bind_param('s', $_POST['name']);
-
-    $stmt->execute();
-
-    $stmt->bind_result($in_use);
-    
-    $stmt->fetch();
-    
-    if($in_use)
-    {
-        $errortext = "Username is already in use.";
-        break;
-    }
-    
-    $stmt->close();
-    
-    $query = "INSERT INTO players (username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
-    
-    $stmt = $mysqli->prepare($query);
-    
-    if(!$stmt)
-    {
-        $errortext = "Could not create prepared statement.";
-        break;
-    }
-    
-    $teen = (isset($_POST["teen"]));
-    $college = (isset($_POST["college"]));
-    $atb = (isset($_POST["atb"]));
-    $rookie = (isset($_POST["rookie"]));
-    
-    $stmt->bind_param('siiii', $_POST['name'], $teen, $college, $atb, $rookie);
-    
-    $stmt->execute();
-    
-    $stmt->close();
-    
-    $mysqli->close();
 }
-while(false);
+catch (Exception $e)
+{
+    $title = "Error adding player";
+    $message = sprintf("<p class=\"error\">Error adding player: %s</p>",
+        $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -92,27 +56,11 @@ while(false);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title><?php
-if(isset($errortext))
-{
-    echo "Error adding user";
-}
-else
-{
-    echo "User added successfully";
-}
-?></title>
+<title><?php echo $title;?></title>
 </head>
 <body>
 <?php
-if(isset($errortext))
-{
-    echo "<p class=\"error\">$errortext</p>";
-}
-else
-{
-    echo "<p>Successfully added user ". $_POST['name']." to database!</p>";
-}
+echo $message;
 footer();
 ?>
 </body>

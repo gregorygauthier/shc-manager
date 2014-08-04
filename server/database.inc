@@ -307,4 +307,145 @@ class Database
             throw $e;
         }
     }
+    
+    public function add_player($username, $teen, $college, $atb, $rookie)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT COUNT(*) FROM players WHERE username=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($stmt->error);
+            }
+            $stmt->bind_param('s', $username);
+            $stmt->execute();
+            $stmt->bind_result($in_use);
+            $stmt->fetch();
+            $stmt->close();
+            if($in_use)
+            {
+                return 0;
+            }
+            
+            $query = "INSERT INTO players
+                (username, teen_eligible, college_eligible,
+                atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($stmt->error);
+            }
+            $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie);
+            
+            $stmt->execute();
+            if(!$stmt->affected_rows)
+            {
+                throw new Exception("Could not add player to database: {$stmt->error}");
+            }
+            $stmt->close();
+            $return_val = $mysqli->insert_id;
+            $mysqli->close();
+            return $return_val;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function add_player_response($player_id, $clue_id, $response_text)
+    {
+        if(is_null($player_id) or is_null($clue_id))
+        {
+            return 0;
+        }
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            /* Check if there is already a response recorded */
+            $check_query = "SELECT COUNT(*) FROM player_responses WHERE
+                player_id = ? AND clue_id = ?";
+            $stmt = $mysqli->prepare($check_query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('ii', $player_id, $clue_id);
+            $stmt->execute();
+            $stmt->bind_result($response_recorded);
+            $stmt->fetch();
+            $stmt->close();
+            
+            $insert_query = "INSERT INTO player_responses (player_id, clue_id,
+                response_text) VALUES (?, ?, ?)";
+            $update_query = "UPDATE player_responses SET response_text = ?
+                WHERE player_id = ? AND clue_id = ?";
+            if($response_recorded)
+            {
+                $stmt = $mysqli->prepare($update_query);
+                if(!$stmt)
+                {
+                    throw new Exception($stmt->error);
+                }
+                $stmt->bind_param('sii', $response_text, $player_id, $clue_id);
+                $stmt->execute();
+                $return_val = 1;
+            }
+            else
+            {
+                $stmt = $mysqli->prepare($insert_query);
+                if(!$stmt)
+                {
+                    throw new Exception($stmt->error);
+                }
+                $stmt->bind_param('iis', $player_id, $clue_id, $response_text);
+
+                $stmt->execute();
+                if(!$stmt->affected_rows)
+                {
+                    throw new Exception("Could not add player response to database: {$stmt->error}");
+                }
+                $stmt->close();
+                $return_val = $mysqli->insert_id;
+            }
+            $mysqli->close();
+            return $return_val;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
 }

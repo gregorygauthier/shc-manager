@@ -57,74 +57,25 @@ foreach($_POST as $key => $value)
     }
 }
 
-do
+try
 {
-    if(!isset($player_id))
+    if(is_null($player_id))
     {
-        $errortext = "Player id not specified.";
-        break;
+        throw new Exception("No player id specified");
     }
-    $mysqli = connect_mysql();
-    
-    if(!$mysqli)
-    {
-        $errortext = "Could not connect to database.";
-        break;
-    }
-    
-    $mysqli->query("USE $mysql_dbname;");
-    
-    $query_count = "SELECT COUNT(*) FROM player_responses WHERE
-        player_id = ? AND clue_id = ?";
-    
-    $query_insert = "INSERT INTO player_responses (player_id, clue_id,
-        response_text) VALUES (?, ?, ?)";
-    
-    $query_replace = "UPDATE player_responses SET response_text = ?
-        WHERE player_id = ? AND clue_id = ?";
-    
     foreach($responses as $id => $resp)
     {
-        $stmt = $mysqli->prepare($query_count);
-        
-        if(!$stmt)
-        {
-            $errortext = "Could not prepare statement.";
-            break;
-        }
-        
-        $stmt->bind_param("ii", $player_id, $id);
-        
-        $stmt->execute();
-        
-        $stmt->bind_result($num_responses);
-        $stmt->fetch();
-        $stmt->close();
-        if($num_responses > 0)
-        {
-            $stmt = $mysqli->prepare($query_replace);
-            $stmt->bind_param("sii", $resp, $player_id, $id);
-        }
-        else
-        {
-            $stmt = $mysqli->prepare($query_insert);
-            $stmt->bind_param("iis", $player_id, $id, $resp);
-        }
-        $stmt->execute();
-        /*if(!$stmt->affected_rows)
-        {
-            if(!isset($errortext))
-            {
-                $errortext = "";
-            }
-            $errortext .= "Response for question id $id could not be placed
-                into the database.  ";
-        }*/ // Removed since an update that preserves a response causes
-            // 0 rows to be affected
-        $stmt->close();
+        Database::add_player_response($player_id, $id, $resp);
     }
-}while(false);
-
+    $title = "Responses successfully updated";
+    $message = "<p>The responses were successfully updated!</p>";
+}
+catch (Exception $e)
+{
+    $title = "Error adding player response";
+    $message = sprintf("<p class=\"error\">Error adding player response: %s</p>",
+        $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -132,29 +83,11 @@ do
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>
-<?php
-if(isset($errortext))
-{
-    echo "Error adding responses";
-}
-else
-{
-    echo "Responses added successfully";
-}
-?>
-</title>
+<title><?php echo $title;?></title>
 </head>
 <body>
 <?php
-if(isset($errortext))
-{
-    displayError($errortext);
-}
-else
-{
-    echo "<p>Responses added successfully!</p>";
-}
+echo $message;
 footer();
 ?>
 </body>
