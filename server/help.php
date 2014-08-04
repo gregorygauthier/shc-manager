@@ -40,6 +40,35 @@ startpage(UNRESTRICTED);
 </head>
 <body>
 <h1>Help</h1>
+<h2 id="player-faq">Player FAQs</h2>
+<p>If you are playing the Summer Hiatus Challenge, this is the section that
+will likely be most useful for you.</p>
+<h3 id="how-do-i-play">How do I play the Summer Hiatus Challenge?</h3>
+<p>To play the Summer Hiatus Challenge, create an account at
+<a href="http://jboard.tv">jboard.tv</a>.  Also, be sure to check the
+Summer Hiatus Challenge rules (to be available soon).</p>
+<h3 id="how-does-the-scoring-work">How does this scoring website work?</h3>
+<p>A computer program is regularly run to collect posts made in the SHC game
+threads.  These posts are automatically parsed, and the responses are entered
+into the database.  Then, each response is compared to a list of right and
+wrong response patterns, on which basis it is scored.  For more technical
+information, see <a href="#grading">the "Grading" section of this page</a>.</p>
+<h3 id="my-response-is-not-appearing">My responses are not appearing!</h3>
+<p>Likely, the program collecting the posts has not run yet.  Be patient:
+your responses will soon be collected and recorded.  The script is initiated
+manually.</p>
+<h3 id="what-does-it-mean-ungraded">What does it mean that I have ungraded
+responses?</h3>
+<p>One or more of your responses does not match a right or wrong answer
+pattern.  Not every possible response (right or wrong) can be predicted.
+Ungraded responses are flagged for further review, and additional response
+patterns will be added so that every response will be correctly marked as right
+or wrong.</p>
+<h3 id="my-score-is-incorrect">My score is incorrect.  What happened?</h3>
+<p>The computer program or I could have made a mistake, either in parsing your
+response or in grading it as right or wrong.  Please feel free
+to post such issues in the corresponding week's "Instant Replay" thread.
+You can also send a PM on jboard.tv to user rjaguar3.</p>
 <h2 id="grading">Grading</h2>
 <h3 id="how-grading-works">How grading works</h3>
 <p>Each question has a list of pre-defined responses.  Each response is
