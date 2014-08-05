@@ -136,7 +136,7 @@ else
             printf('<tr id="newresponse%d">', $ungraded_index);
             printf('<td><input type="text" maxlength="65535" '.
                 'name="newresponsetext%d" value="%s" /></td>', $ungraded_index,
-                isset($response->text)? $response->text : '');
+                isset($response->response_text)? $response->response_text : '');
             echo '<td>';
             printf('<input type="radio" name="newresponsegrade%d" '.
                 'value="correct"/>Correct', $ungraded_index);
