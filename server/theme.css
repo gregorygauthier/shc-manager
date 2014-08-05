@@ -101,6 +101,10 @@ td
 {
 padding: 2px;
 }
+td.alert
+{
+background-color: #FFCC00;
+}
 td.count
 {
 text-align: right;

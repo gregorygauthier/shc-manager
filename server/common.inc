@@ -321,7 +321,7 @@ HTML;
                 '<td>%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
-                '<td class="score">%d</td><td class="score">%s</td></tr>',
+                '<td class="score">%d</td><td class="%scount">%s</td></tr>',
                 $records_printed % 2 ? "odd" : "even", $rank,
                 $value, is_null($toc_berth_abbrs[$key]) ? '' :
                 sprintf('<span class="tocsymbol" title="%s">%s</span>',
@@ -331,6 +331,7 @@ HTML;
                 $atb_eligible_stats[$key] ? 'A' : '',
                 $rookie_eligible_stats[$key] ? 'R' : '',
                 $scores[$key],
+                $ungradeds[$key] ? 'alert ': '',
                 $ungradeds[$key] ? $ungradeds[$key] : '');
         }
         $buffer[] = '</table>';

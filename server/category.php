@@ -173,7 +173,7 @@ if(!isset($errortext))
                 $clue->clue_statistics->num_clam);
             if ($clue->clue_statistics->num_ungraded)
             {
-                printf ('<td class="count">%d</td>',
+                printf ('<td class="alert count">%d</td>',
                     $clue->clue_statistics->num_clam);
             }
             else
