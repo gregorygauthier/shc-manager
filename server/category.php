@@ -1,5 +1,5 @@
 <?php
-/** Copyright (c) 2012 Gregory Gauthier
+/** Copyright (c) 2012-2014 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -29,6 +29,32 @@ or is not given, then the usual HTML format is used.*/
 
 require_once('common.inc');
 $isloggedin = startpage(UNRESTRICTED);
+try
+{
+    if(!isset($_GET['id']) or !$_GET['id'])
+    {
+        throw new Exception("No category id was specified");
+    }
+    $id = $_GET['id'];
+    if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
+    {
+        $format = 'bbcode';
+    }
+    else
+    {
+        $format = 'normal';
+    }
+    
+    $category = Database::get_category_by_id($id);
+    $clues = Database::get_clues_for_category($id, true);
+    
+    $title = strip_tags($category->name);
+}
+catch(Exception $e)
+{
+    $title = "Error viewing category.";
+    $errortext = $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,147 +62,102 @@ $isloggedin = startpage(UNRESTRICTED);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<?php
-if(!isset($_GET['id']))
-{
-    $errortext="No category id was specified.";
-}
-else
-{
-    $id = $_GET['id'];
-    $mysqli = connect_mysql();
-    $mysqli->query("USE $mysql_dbname;");
-    $query = "SELECT name, explanatory_text FROM categories WHERE id=?";
-    $stmt = $mysqli->prepare($query);
-    if(!$stmt)
-    {
-        $errortext="Could not create a statement to query the".
-        " categories table.";
-    }
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $stmt->bind_result($catname, $expl);
-    if(!$stmt->fetch())
-    {
-        $errortext="Invalid category id specified.";
-    }
-    $stmt->close();
-}
-?>
-<title>
-<?php
-if(isset($errortext))
-{
-    echo "Error displaying category";
-}
-else
-{
-    echo strip_tags($catname);
-}
-?>
-</title>
+<title><?php echo $title;?></title>
 </head>
 <body>
 <?php
 if(!isset($errortext))
 {
-    echo("<h1>$catname</h1>");
-    echo("<p class=\"explanatory\">$expl</p>");
-    $query = "SELECT id, clue_text, point_value, wrong_point_value
-        FROM clues WHERE category_id=? ORDER BY point_value ASC";
-    $stmt = $mysqli->prepare($query);
-    if(!$stmt)
+    echo("<h1>{$category->name}</h1>");
+    echo("<p class=\"explanatory\">{$category->explanatory_text}</p>");
+    if($format == 'bbcode')
     {
-        $errortext="Could not create a statement to query the".
-        " clues table.";
+        echo "You can copy and paste the text below onto a forum:";
+        $modified_catname = strtoupper($category->name);
+        // Remove <b></b> tags; change <i></i> and <u></u> tags to BBcode
+        $modified_catname = preg_replace('/<\/?b>/i', '',
+            $modified_catname);
+        $modified_catname = preg_replace('/<i>/i', '[i]',
+            $modified_catname);
+        $modified_catname = preg_replace('/<\/i>/i', '[/i]',
+            $modified_catname);
+        $modified_catname = preg_replace('/<u>/i', '[u]',
+            $modified_catname);
+        $modified_catname = preg_replace('/<\/u>/i', '[/u]',
+            $modified_catname);
+        printf('<textarea class="fullwidthinput"'.
+            'rows="%d" cols="%d" name="pasteable">',
+            $pasteable_rows, $clue_cols);
+        printf('[b]%s[/b]', $modified_catname);
+            
+        echo "\n\n";
+        
+        $modified_expl = $category->explanatory_text;
+        $modified_expl = preg_replace('/<i>/i', '[/i]',
+            $modified_expl);
+        $modified_expl = preg_replace('/<\/i>/i', '[i]',
+            $modified_expl);
+        $modified_expl = preg_replace('/<b>/i', '[b]',
+            $modified_expl);
+        $modified_expl = preg_replace('/<\/b>/i', '[/b]',
+            $modified_expl);
+        $modified_expl = preg_replace('/<u>/i', '[u]',
+            $modified_expl);
+        $modified_expl = preg_replace('/<\/u>/i', '[/u]',
+            $modified_expl);
+        $modified_expl = preg_replace(
+            '/<a href="([^">]*)">(.*)<\/a>/i', 
+            '[url=$1]$2[/url]', $modified_expl);
+        printf ('[i]%s[/i]', $modified_expl);
+        echo "\n\n";
+            
+        foreach($clues as $clue)
+        {
+            $modified_cluetext = $clue->clue_text;
+            $modified_cluetext = preg_replace('/<b>/i', '[b]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace('/<\/b>/i', '[/b]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace('/<i>/i', '[i]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace('/<\/i>/i', '[/i]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace('/<u>/i', '[u]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace('/<\/u>/i', '[/u]',
+                $modified_cluetext);
+            $modified_cluetext = preg_replace(
+                '/<a href="([^">]*)">(.*)<\/a>/i', 
+                '[url=$1]$2[/url]', $modified_cluetext);
+            printf ('%d. %s', $clue->point_value, $modified_cluetext);
+            echo "\n";
+        }
+        echo '</textarea>';
     }
     else
     {
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $stmt->bind_result($clue_id, $cluetext, $pts, $wrong_pts);
-        if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
+        echo "<ul>";
+        foreach($clues as $clue)
         {
-            echo "You can copy and paste the text below onto a forum:";
-            $modified_catname = strtoupper($catname);
-            // Remove <b></b> tags; change <i></i> and <u></u> tags to BBcode
-            $modified_catname = preg_replace('/<\/?b>/i', '',
-                $modified_catname);
-            $modified_catname = preg_replace('/<i>/i', '[i]',
-                $modified_catname);
-            $modified_catname = preg_replace('/<\/i>/i', '[/i]',
-                $modified_catname);
-            $modified_catname = preg_replace('/<u>/i', '[u]',
-                $modified_catname);
-            $modified_catname = preg_replace('/<\/u>/i', '[/u]',
-                $modified_catname);
-            printf('<textarea class="fullwidthinput"'.
-                'rows="%d" cols="%d" name="pasteable">',
-                $pasteable_rows, $clue_cols);
-            printf('[b]%s[/b]', $modified_catname);
-            
-            echo "\n\n";
-            
-            $modified_expl = $expl;
-            $modified_expl = preg_replace('/<i>/i', '[/i]',
-                $modified_expl);
-            $modified_expl = preg_replace('/<\/i>/i', '[i]',
-                $modified_expl);
-            $modified_expl = preg_replace('/<b>/i', '[b]',
-                $modified_expl);
-            $modified_expl = preg_replace('/<\/b>/i', '[/b]',
-                $modified_expl);
-            $modified_expl = preg_replace('/<u>/i', '[u]',
-                $modified_expl);
-            $modified_expl = preg_replace('/<\/u>/i', '[/u]',
-                $modified_expl);
-            $modified_expl = preg_replace(
-                    '/<a href="([^">]*)">(.*)<\/a>/i', 
-                    '[url=$1]$2[/url]', $modified_expl);
-            printf ('[i]%s[/i]', $modified_expl);
-            echo "\n\n";
-            
-            while($stmt->fetch())
+            echo '<li>';
+            if($isloggedin)
             {
-                $modified_cluetext = $cluetext;
-                $modified_cluetext = preg_replace('/<b>/i', '[b]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace('/<\/b>/i', '[/b]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace('/<i>/i', '[i]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace('/<\/i>/i', '[/i]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace('/<u>/i', '[u]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace('/<\/u>/i', '[/u]',
-                    $modified_cluetext);
-                $modified_cluetext = preg_replace(
-                    '/<a href="([^">]*)">(.*)<\/a>/i', 
-                    '[url=$1]$2[/url]', $modified_cluetext);
-                printf ('%d. %s', $pts, $modified_cluetext);
-                echo "\n";
+                printf ('(<a href="edit_clue.php?id=%d">edit</a>) ',
+                    $clue->id);
+                printf ('(<a href="edit_responses.php?id=%d">grade</a>) ',
+                    $clue->id);
             }
-            echo '</textarea>';
+            printf ('(%d/%d) %s (%d right/%d wrong/%d clam)%s</li>',
+                $clue->point_value, $clue->wrong_point_value,
+                $clue->clue_text, $clue->clue_statistics->num_right,
+                $clue->clue_statistics->num_wrong,
+                $clue->clue_statistics->num_clam,
+                $clue->clue_statistics->num_ungraded ?
+                sprintf(' (<emph>includes %d ungraded</emph>)',
+                $clue->clue_statistics->num_ungraded)
+                :'');
         }
-        else
-        {
-            echo "<ul>";
-            while($stmt->fetch())
-            {
-                echo '<li>';
-                if($isloggedin)
-                {
-                    printf ('(<a href="edit_clue.php?id=%d">edit</a>) ',
-                        $clue_id);
-                    printf ('(<a href="edit_responses.php?id=%d">grade</a>) ',
-                        $clue_id);
-                }
-                printf ('(%d/%d) %s</li>', $pts, $wrong_pts, $cluetext);
-            }
-            echo "</ul>";
-        }
-        $mysqli->close();
+        echo "</ul>";
     }
 }
 if(isset($errortext))
@@ -186,7 +167,7 @@ if(isset($errortext))
 
 ?>
 <p>View the <?php
-if(isset($_GET['format']) and $_GET['format'] == 'bbcode')
+if($format == 'bbcode')
 {
     printf('<a href="category.php?id=%d&format=normal">normal HTML version</a>',
         $id);

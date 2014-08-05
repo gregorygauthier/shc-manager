@@ -767,7 +767,7 @@ class Database
         }
     }
     
-    public function get_clue_by_id($id)
+    public function get_clue_by_id($id, $with_statistics = false)
     {
         global $mysql_dbname;
         try
@@ -809,8 +809,146 @@ class Database
                 $result = null;
             }
             $stmt->close();
+            if($with_statistics)
+            {
+                $result->clue_statistics =
+                    Database::get_statistics_for_clue($id);
+            }
+            else
+            {
+                $result->clue_statistics = null;
+            }
             $mysqli->close();
             return $result;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_statistics_for_clue($id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            $query = "SELECT
+                IF(grade IS NOT NULL, IF(grade, 'Right', 'Wrong'),
+                IF(response_text IS NULL OR response_text = '',
+                'Clam', 'Ungraded')) AS result,
+                COUNT(*) FROM player_responses WHERE clue_id=?
+                GROUP BY result";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $id);
+            
+            $stmt->execute();
+            $stmt->bind_result($result, $number);
+            $statistics = new ClueStatistics();
+            $statistics->num_right = 0;
+            $statistics->num_wrong = 0;
+            $statistics->num_clam = 0;
+            $statistics->num_ungraded = 0;
+            while($stmt->fetch())
+            {
+                if($result == 'Right')
+                {
+                    $statistics->num_right = $number;
+                }
+                elseif($result == 'Wrong')
+                {
+                    $statistics->num_wrong = $number;
+                }
+                elseif($result == 'Clam')
+                {
+                    $statistics->num_clam = $number;
+                }
+                elseif($result == 'Ungraded')
+                {
+                    $statistics->num_ungraded = $number;
+                }
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $statistics;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_clues_for_category($category_id, $with_statistics = false)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT id, clue_text, point_value, wrong_point_value
+                FROM clues WHERE category_id=? ORDER BY point_value ASC";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('i', $category_id);
+            
+            $stmt->execute();
+            $results = array();
+            $stmt->bind_result($id, $clue_text, $point_value, $wrong_point_value);
+            $category = Database::get_category_by_id($category_id);
+            while($stmt->fetch())
+            {
+                $clue = new Clue();
+                $clue->id = $id;
+                $clue->clue_text = $clue_text;
+                $clue->point_value = $point_value;
+                $clue->wrong_point_value = $wrong_point_value;
+                $results[] = $clue;
+                if($with_statistics)
+                {
+                    $clue->clue_statistics =
+                        Database::get_statistics_for_clue($id);
+                }
+                else
+                {
+                    $clue->clue_statistics = null;
+                }
+            }
+            $stmt->close();
+            $mysqli->close();
+            return $results;
         }
         catch (Exception $e)
         {
@@ -838,6 +976,15 @@ class Clue
     public $category; /* a Category struct */
     public $point_value;
     public $wrong_point_value;
+    public $clue_statistics; /*a ClueStatistics struct */
+}
+
+class ClueStatistics
+{
+    public $num_right;
+    public $num_wrong;
+    public $num_clam;
+    public $num_ungraded;
 }
 
 class Category
