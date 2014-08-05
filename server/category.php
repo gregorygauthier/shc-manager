@@ -136,28 +136,53 @@ if(!isset($errortext))
     }
     else
     {
-        echo "<ul>";
+        echo "<table>";
+        echo '<tr>';
+        if($isloggedin)
+        {
+            echo '<th>Links</th>';
+        }
+        echo '<th>Clue</th>';
+        echo '<th>Right</th>';
+        echo '<th>Wrong</th>';
+        echo '<th>Clam</th>';
+        echo '<th>Ungraded</th>';
+        echo '</tr>';
+        $clue_number = 0;
         foreach($clues as $clue)
         {
-            echo '<li>';
+            $clue_number++;
+            printf('<tr class="%s">', $clue_number % 2 ? 'even': 'odd');
             if($isloggedin)
             {
+                echo '<td>';
                 printf ('(<a href="edit_clue.php?id=%d">edit</a>) ',
                     $clue->id);
                 printf ('(<a href="edit_responses.php?id=%d">grade</a>) ',
                     $clue->id);
+                echo '</td>';
             }
-            printf ('(%d/%d) %s (%d right/%d wrong/%d clam)%s</li>',
+            printf ('<td>(%d/%d) %s</td>',
                 $clue->point_value, $clue->wrong_point_value,
-                $clue->clue_text, $clue->clue_statistics->num_right,
-                $clue->clue_statistics->num_wrong,
-                $clue->clue_statistics->num_clam,
-                $clue->clue_statistics->num_ungraded ?
-                sprintf(' (<emph>includes %d ungraded</emph>)',
-                $clue->clue_statistics->num_ungraded)
-                :'');
+                $clue->clue_text);
+            printf ('<td class="count">%d</td>',
+                $clue->clue_statistics->num_right);
+            printf ('<td class="count">%d</td>',
+                $clue->clue_statistics->num_wrong);
+            printf ('<td class="count">%d</td>',
+                $clue->clue_statistics->num_clam);
+            if ($clue->clue_statistics->num_ungraded)
+            {
+                printf ('<td class="count">%d</td>',
+                    $clue->clue_statistics->num_clam);
+            }
+            else
+            {
+                echo '<td class="count"></td>';
+            }
+            echo '</tr>';
         }
-        echo "</ul>";
+        echo "</table>";
     }
 }
 if(isset($errortext))

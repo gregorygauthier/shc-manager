@@ -101,6 +101,10 @@ td
 {
 padding: 2px;
 }
+td.count
+{
+text-align: right;
+}
 td.idnumber
 {
 text-align: right;
