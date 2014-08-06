@@ -123,6 +123,10 @@ function navbar()
         $places['Write category'] = 'write_category.php';
         $places['Add player'] = 'new_player.php';
         $places['Ungraded responses'] = 'ungraded.php';
+        if($logged_in_username == 'admin')
+        {
+            $places['Autofill'] = 'autofill.php';
+        }
     }
     $places['Help'] = 'help.php';
     echo '<nav><ul class="navbar">';
