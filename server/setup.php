@@ -268,21 +268,24 @@ $mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysql
 
 $query = "CREATE VIEW daily_scores AS
   SELECT player_id, day_id, round_id, SUM(score) AS daily_score,
-  SUM(ungraded) AS daily_ungraded FROM scores
+  SUM(ungraded) AS daily_ungraded,
+  1 AS days_played FROM scores
   GROUP BY player_id, day_id;";
 
 $mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysqli->error));
 
 $query = "CREATE VIEW round_scores AS
   SELECT player_id, round_id, SUM(score) AS round_score,
-  SUM(ungraded) AS round_ungraded FROM scores
+  SUM(ungraded) AS round_ungraded,
+  COUNT(DISTINCT day_id) AS days_played FROM scores
   GROUP BY player_id, round_id;";
 
 $mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysqli->error));
 
 $query = "CREATE VIEW overall_scores AS
   SELECT player_id, SUM(score) AS overall_score,
-  SUM(ungraded) AS overall_ungraded FROM scores
+  SUM(ungraded) AS overall_ungraded,
+  COUNT(DISTINCT day_id) AS days_played FROM scores
   INNER JOIN rounds ON scores.round_id = rounds.id
   WHERE rounds.is_regular = 1
   GROUP BY player_id;";
