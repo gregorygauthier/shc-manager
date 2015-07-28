@@ -63,16 +63,7 @@ echo <<<HTML
 <input type="password" name="password" id="passwordfield" />
 <button type="submit">Log in</button>
 </form>
-<h2>Forgot username or password</h2>
-<h3>Forgotten username</h3>
-<p>If you forgot your username, enter your e-mail address below and your
-username will be sent to you by e-mail.</p>
-<form action="forgotten.php" method="POST">
-<label for="forgottenemailfield">E-mail:</label>
-<input type="text" name="email" maxlength="255" id="forgottenemailfield" />
-<button type="submit">Send username</button>
-</form>
-<h3>Forgotten password</h3>
+<h2>Forgotten password</h2>
 <p>If you forgot your password, enter your username below and you will be
 given a new password by e-mail.</p>
 <form action="forgotten.php" method="POST">
@@ -82,13 +73,7 @@ given a new password by e-mail.</p>
 <button type="submit">Send new password</button>
 </form>
 <h2>Don't have an account?</h2>
-<p>Accounts are created on an invitational basis only.  Please contact the
-Summer Hiatus Challenge director or the website administrator if you have
-need of an account.</p>
-<p>Login credentials are only necessary to make changes to the database,
-such as adding clues, creating users, and inputting and grading responses
-posted on the forums.  Participation in the Summer Hiatus Challenge
-takes place entirely on the <a href="http://jboard.tv">jboard.tv forums</a>.
+<p>You can <a href="new_player.php">create an account</a>.
 You do not need an account to view revealed Summer Hiatus Challenge clues and
 up-to-date standings on this website.</p>
 HTML;

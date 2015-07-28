@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-$isloggedin = startpage(RESTRICTED);
+$isloggedin = startpage(GRADE);
 ?>
 <!DOCTYPE html>
 <html lang="en">

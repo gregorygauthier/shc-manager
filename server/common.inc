@@ -30,8 +30,9 @@ $clue_cols = 60;
 $response_cols = 40;
 
 define("UNRESTRICTED", 0);
-define("RESTRICTED", 1);
-define("ADMIN", 2);
+define("LOGGEDIN", 1);
+define("GRADE", 2);
+define("ADMIN", 3);
 
 function startpage($access){
     global $logged_in_username;
@@ -39,23 +40,29 @@ function startpage($access){
     if(isset($_SESSION['username']))
     {
         $logged_in_username = $_SESSION['username'];
-        if($access == ADMIN and $logged_in_username != 'admin')
+        $player = Database::get_player_by_username($logged_in_username);
+        if($access == ADMIN and !$player->admin_privilege)
         {
             header('Location: unauthorized_admin.php');
-            exit;
-            return false;
+            exit(1);
+        }
+        if($access == RESTRICTED and !$player->grade_privilege and !$player->admin_privilege)
+        {
+            header('Location: unauthorized.php');
+            exit(1);
         }
         return true;
     }
     else
     {
-        if($access == RESTRICTED or $access == ADMIN)
+        if($access == LOGGEDIN or $access == RESTRICTED or $access == ADMIN)
         {
             header('Location: unauthorized.php');
             exit;
         }
         return false;
     }
+    return true;
 }
 
 
@@ -93,7 +100,7 @@ function loginbug()
     if(!isset($logged_in_username))
     {
         echo '<div id="login" class="loginstatus">';
-        echo '<p><a href="login.php">Log in.</a></p>';
+        echo '<p><a href="login.php">Log in</a> or <a href="new_player.php">create an account</a>.</p>';
     }
     else
     {
@@ -166,7 +173,7 @@ function auth($username, $password)
     {
         $mysqli = connect_mysql();
         $mysqli->query("USE $mysql_dbname;");
-        $query = "SELECT * FROM users WHERE username=? AND hashed_password=?
+        $query = "SELECT * FROM players WHERE username=? AND hashed_password=?
             LIMIT 1";
         $stmt = $mysqli->prepare($query);
         $hash = hash('sha512', $password.$salt);

@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(ADMIN);
 
 /* USAGE OF THIS PAGE: This is an internal page used only by edit_player.php.
 

@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(LOGGEDIN);
 
 $responses = array();
 
@@ -31,23 +31,10 @@ foreach($_POST as $key => $value)
     if(preg_match('/^response(\d+)/', $key, $matches))
     {
         $tmp = $value;
-        // Here are the rules for storing answers:
-        // All non-alphanumeric characters are removed.
-        // All whitespace is converted to a single space.
+        // The rule for storing answers:
         // All leading and trailing whitespace is removed
-        // The only exceptions is as follows:
-        // A decimal point in a numerical expression is preserved
-        // To be precise, this refers to a decimal point that is
-        // NOT followed by a numerical character
-        //
-        // Examples:
-        // Mr. Jones -> Mr Jones
-        // $1000. -> 1000
-        // .14159 -> .14159
-        $tmp = preg_replace('/-/', ' ', $tmp);
-        $tmp = preg_replace('/[^A-Za-z0-9.\/\s]/', '', $tmp);
-        $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
-        $tmp = preg_replace('/\s+/', ' ', $tmp);
+        // All other characters are retained verbatim.
+        // This is a change from the 2014 behavior.
         $tmp = trim($tmp);
         $responses[$matches[1]] = $tmp;
     }

@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(ADMIN);
 try
 {
     if(!isset($_POST['newdayround']))

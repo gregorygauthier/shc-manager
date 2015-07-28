@@ -22,16 +22,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(UNRESTRICTED);
 
 $username = $_POST['name'];
 $teen = (isset($_POST["teen"]));
 $college = (isset($_POST["college"]));
 $atb = (isset($_POST["atb"]));
 $rookie = (isset($_POST["rookie"]));
+$email = $_POST['email'];
 try
 {
-    $return_value = Database::add_player($username, $teen, $college, $atb, $rookie);
+    if(!$username)
+    {
+        throw new Exception("no username provided");
+    }
+    if(!$email)
+    {
+        throw new Exception("no e-mail provided");
+    }
+    $return_value = Database::add_player($username, $teen, $college, $atb, $rookie, $email);
     if($return_value)
     {
         $title = "Player successfully added";

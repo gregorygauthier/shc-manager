@@ -123,6 +123,11 @@ $query = "CREATE TABLE players (
   atb_eligible BOOLEAN,
   rookie_eligible BOOLEAN,
   toc TINYINT,
+  hashed_password CHAR(128),
+  email VARCHAR(255),
+  admin_privilege BOOLEAN DEFAULT FALSE,
+  grade_privilege BOOLEAN DEFAULT FALSE,
+  can_play BOOLEAN DEFAULT TRUE,
   FOREIGN KEY (toc) REFERENCES toc_berths(id),
   INDEX username_idx (username))
   ENGINE = InnoDB,
@@ -141,17 +146,6 @@ $query = "CREATE TABLE player_responses (
   INDEX player_id_idx (player_id),
   INDEX clue_id_idx (clue_id),
   UNIQUE player_and_clue_idx (player_id, clue_id))
-  ENGINE = InnoDB,
-  DEFAULT CHARSET = utf8;";
-
-$mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysqli->error));
-
-$query = "CREATE TABLE users (
-  id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(255),
-  hashed_password CHAR(128),
-  email VARCHAR(255),
-  INDEX username_idx (username))
   ENGINE = InnoDB,
   DEFAULT CHARSET = utf8;";
 

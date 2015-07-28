@@ -25,7 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 whose responses are to be edited */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(GRADE);
 
 
 try

@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(ADMIN);
+startpage(UNRESTRICTED);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,10 +35,11 @@ startpage(ADMIN);
 <body>
 <h1>Create account</h1>
 <form action="submit_created_account.php" method="post">
-<label for="usernamefield">Username:</label>
+<label for="usernamefield">jboard.tv username:</label>
 <input id="usernamefield" type="text" maxlength="255" name="username" />
 <label for="emailfield">E-mail:</label>
 <input id="emailfield" type="text" maxlength="255" name="email" />
+<p>Your e-mail will not be shared with third parties.</p>
 <p>A password will be randomly generated and sent to the e-mail provided.<p>
 <button type="submit">Create account</button>
 </form>

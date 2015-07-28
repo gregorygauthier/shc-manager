@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(UNRESTRICTED);
 
 ?>
 <!DOCTYPE html>
@@ -31,11 +31,12 @@ startpage(RESTRICTED);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Add new player</title>
+<title>Create an account</title>
 </head>
 <body>
+<h1>Create an account</h1>
 <form action="add_player.php" method="post">
-<p><label for="namefield">Player name: </label>
+<p><label for="namefield">Jboard.tv username: </label>
 <input type="text" id="namefield" maxlength="50" name="name" /></p>
 <p><input type="checkbox" id="teencheck" name="teen" value="yes" />
 <label for="teencheck">Teen eligible</label></p>
@@ -45,6 +46,10 @@ startpage(RESTRICTED);
 <label for="atbcheck">ATB eligible</label></p>
 <p><input type="checkbox" id="rookiecheck" name="rookie" value="yes" />
 <label for="rookiecheck">Rookie eligible</label></p>
+<p><label for="emailfield">E-mail</label>
+<input type="email" id="emailfield" name="email" /></p>
+<p>Your password will be sent to your e-mail address.  Your e-mail address
+will not be shared with third parties.</p>
 <button type="submit">Submit</button>
 </form>
 <?php footer();?>

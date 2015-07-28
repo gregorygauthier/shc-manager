@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(ADMIN);
 $name = $_POST['newroundname'];
 $seq = null;
 $is_regular = ($_POST['newroundregular'] == 'yes' ? 1 : 0);

@@ -25,7 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 category to be edited */
 
 require_once('common.inc');
-startpage(RESTRICTED);
+startpage(ADMIN);
 
 if(isset($_GET['id']))
 {

@@ -39,7 +39,7 @@ else
     {
         $mysqli = connect_mysql();
         $mysqli->query("USE $mysql_dbname;");
-        $query = "SELECT COUNT(*) FROM users WHERE username=?";
+        $query = "SELECT COUNT(*) FROM players WHERE username=?";
         $stmt = $mysqli->prepare($query);
         $stmt->bind_param('s', $_POST['username']);
         $stmt->execute();

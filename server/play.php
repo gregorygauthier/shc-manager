@@ -1,5 +1,5 @@
 <?php
-/** Copyright (c) 2012 Gregory Gauthier
+/** Copyright (c) 2013 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -22,47 +22,5 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(ADMIN);
+startpage(UNRESTRICTED);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
-<link rel="stylesheet" type="text/css" href="theme.css" />
-<link rel="icon" type="image/png" href="shcicon.png" />
-<title>Submitting modified clue</title>
-</head>
-<body>
-<?php
-
-$mysqli = connect_mysql();
-
-$query = "USE $mysql_dbname;";
-
-$mysqli->query($query);
-
-$query = "UPDATE clues SET clue_text=?, point_value=?, wrong_point_value=?
-    WHERE id=?";
-
-$stmt = $mysqli->prepare($query);
-
-$stmt->bind_param("siii", $_POST['clue'], $_POST['pointvalue'],
-    $_POST['wrongpointvalue'], $_POST['id']);
-
-$stmt->execute();
-
-if($stmt->affected_rows)
-{
-    echo "<p>Clue updated successfully!</p>";
-}
-else
-{
-    displayError("The clue has not changed could not be updated.");
-}
-
-$stmt->close();
-
-footer();
-?>
-</body>
-</html>

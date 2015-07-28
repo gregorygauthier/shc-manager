@@ -308,9 +308,9 @@ class Database
         }
     }
     
-    public function add_player($username, $teen, $college, $atb, $rookie)
+    public function add_player($username, $teen, $college, $atb, $rookie, $email)
     {
-        global $mysql_dbname;
+        global $mysql_dbname, $salt, $site_url;
         try
         {
             $mysqli = connect_mysql();
@@ -340,15 +340,35 @@ class Database
                 return 0;
             }
             
+            $password = '';
+            $password_length = 8;
+            for($i = 0; $i < $password_length; $i++)
+            {
+                $random = rand(0, 61);
+                if($random < 10)
+                {
+                    $password .= chr(48 + $random);
+                }
+                elseif($random < 36)
+                {
+                    $password .= chr((65 - 10) + $random);
+                }
+                else
+                {
+                    $password .= chr((97 - 36) + $random);
+                }
+            }
+            $hash = hash('sha512', $password.$salt);
+            
             $query = "INSERT INTO players
                 (username, teen_eligible, college_eligible,
-                atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
+                atb_eligible, rookie_eligible, email, hashed_password) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
                 throw new Exception($mysqli->error);
             }
-            $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie);
+            $stmt->bind_param('siiiiss', $username, $teen, $college, $atb, $rookie, $email, $hash);
             
             $stmt->execute();
             if(!$stmt->affected_rows)
@@ -358,6 +378,31 @@ class Database
             $stmt->close();
             $return_val = $mysqli->insert_id;
             $mysqli->close();
+            if($email)
+            {
+                $message = <<<MESSAGE
+An account has been created for you for the Summer Hiatus Challenge.
+
+Your username is %s
+Your password is %s
+Your password is case-sensitive.
+
+You can log in to your account at %s
+
+Please keep this e-mail in a safe place.  We do not store
+unencrypted passwords, so we cannot retrieve your password.
+If you forget your password, you can request a new password.
+
+Thank you for playing the Summer Hiatus Challenge.
+
+Sincerely,
+
+The SHC Manager team
+MESSAGE;
+                $message = sprintf($message, $username, $password, $site_url.'/login.php');
+                mail($email, "Account information at SHC Manager", $message,
+                        "From:$admin_address\r\n");
+            }
             return $return_val;
         }
         catch (Exception $e)
@@ -959,6 +1004,92 @@ class Database
             throw $e;
         }
     }
+    
+    public function player_statistics($player_id)
+    {
+        global $mysql_dbname;
+        try
+        {
+            
+            $stmt->close();
+            $mysqli->close();
+            return $results;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
+    
+    public function get_player_by_username($username)
+    {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "SELECT id, teen_eligible, college_eligible,
+                atb_eligible, rookie_eligible, toc, email,
+                admin_privilege, grade_privilege, can_play FROM players
+                WHERE username=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('s', $username);
+            
+            $stmt->execute();
+            $stmt->bind_result($id, $teen_eligible, $college_eligible,
+                $atb_eligible, $rookie_eligible, $toc, $email,
+                $admin_privilege, $grade_privilege, $can_play);
+            if($stmt->fetch())
+            {
+                $player = new Player();
+                $player->id = $id;
+                $player->username = $username;
+                $player->teen_eligible = $teen_eligible;
+                $player->college_eligible = $college_eligible;
+                $player->atb_eligible = $atb_eligible;
+                $player->rookie_eligible = $rookie_eligible;
+                $player->toc = $toc;
+                $player->email = $email;
+                $player->admin_privilege = $admin_privilege;
+                $player->grade_privilege = $grade_privilege;
+                $player->can_play = $can_play;
+                $stmt->close();
+                $mysqli->close();
+                return $player;
+            }
+            else
+            {
+                $stmt->close();
+                $mysqli->close();
+                return null;
+            }
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
 }
 
 class Response
@@ -1013,4 +1144,23 @@ class Round
     public $name;
     public $sequence;
     public $is_regular;
+}
+
+class Player
+{
+    public $id;
+    public $username;
+    public $teen_eligible;
+    public $college_eligible;
+    public $atb_eligible;
+    public $rookie_eligible;
+    public $toc;
+    public $email;
+    public $admin_privilege;
+    public $grade_privilege;
+    public $can_play;
+}
+class PlayerStatistics
+{
+    
 }

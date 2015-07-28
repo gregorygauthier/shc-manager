@@ -1,5 +1,5 @@
 <?php
-/** Copyright (c) 2012 Gregory Gauthier
+/** Copyright (c) 2014 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -22,8 +22,23 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 require_once('common.inc');
-startpage(UNRESTRICTED);
+$isloggedin = startpage(ADMIN);
 
+try
+{
+    if(!isset($_GET['id']) or is_null($_GET['id']))
+    {
+        throw new Exception("No player id specified.");
+    }
+    $id = $_GET['id'];
+    $stats = Database::player_statistics($id);
+    $title = "Scorecard for $username.";
+}
+catch (Exception $e)
+{
+    $title = "Error generating scorecard.";
+    $errortext = $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,13 +46,18 @@ startpage(UNRESTRICTED);
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
 <link rel="stylesheet" type="text/css" href="theme.css" />
 <link rel="icon" type="image/png" href="shcicon.png" />
-<title>Scorecard</title>
+<title><?php echo $title;?></title>
 </head>
 <body>
-<form action="scorecard.php" method="get">
-<select id="playerselector" name="playerid">
 <?php
-</select>
-</form>
+if(isset($errortext))
+{
+    printf('<p class="error">%s</p>', $errortext);
+}
+else
+{
+    
+}
+footer();?>
 </body>
 </html>
