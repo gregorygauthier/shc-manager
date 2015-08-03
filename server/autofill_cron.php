@@ -309,9 +309,9 @@ STR
                     $tmp = strip_tags($tmp);
                     $tmp = preg_replace('/&/', ' and ', $tmp);
                     $tmp = preg_replace('/[-]/', ' ', $tmp);
-                    $tmp = preg_replace('/\(.*?\)|\[.*?\]|\{.*?\}/', '', $tmp);
-                    $tmp = preg_replace('/[^A-Za-z0-9.\s\/]/', '', $tmp);
-                    $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
+                    // $tmp = preg_replace('/\(.*?\)|\[.*?\]|\{.*?\}/', '', $tmp);
+                    // $tmp = preg_replace('/[^A-Za-z0-9.\s\/]/', '', $tmp);
+                    // $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
                     $tmp = preg_replace('/\s+/', ' ', $tmp);
                     $tmp = trim($tmp);
                     if(preg_match(<<<REGEX
