@@ -549,7 +549,7 @@ class Database
                     FROM responses AS r
                     WHERE r.clue_id = ?
                     UNION
-                    SELECT 0, REPLACE(pr.response_text, '.', '\\\\.'), NULL
+                    SELECT 0, pr.response_text, NULL
                     FROM player_responses AS pr WHERE
                     pr.clue_id = ? AND
                     pr.grade IS NULL AND
