@@ -449,6 +449,44 @@ class Database
         }
     }
     
+    public function add_toc_berth($abbreviation, $description)
+    {
+        if(is_null($description) or $description == '' or
+            is_null($abbreviation) or $abbreviation == '')
+        {
+            return 0;
+        }
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+        $insert_query = "INSERT INTO toc_berths (abbreviation,
+            description) VALUES (?, ?)";
+        $stmt = $mysqli->prepare($insert_query);
+        if(!$stmt)
+        {
+            throw new Exception($mysqli->error);
+        }
+        $stmt->bind_param('ss', $abbreviation, $description);
+
+        $stmt->execute();
+        if(!$stmt->affected_rows)
+        {
+            throw new Exception("Could not add TOC berth to database: {$mysqli->error}");
+        }
+        $stmt->close();
+        $return_val = $mysqli->insert_id;
+    }
+    
     public function update_response($response_id, $response_text, $correct)
     {
         global $mysql_dbname;

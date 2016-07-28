@@ -166,6 +166,10 @@ if($isloggedin)
 <input type="text" maxlength="30" name="newroundname" id="newroundnamefield"/>
 </p>
 <p>
+<label for="newroundtocnamefield">Abbreviation: </label>
+<input type="text" maxlength="20" name="newroundtocname" id="newroundtocnamefield"/>
+</p>
+<p>
 <label for="newroundregularcheckbox">
 Regular play (counts towards overall scores)
 </label>

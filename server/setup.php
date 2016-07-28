@@ -292,7 +292,11 @@ $query = "CREATE VIEW overall_scores AS
 
 $mysqli->query($query) or die(sprintf("Error executing query $query: %s", $mysqli->error));
 
-
+Database::add_toc_berth('Champ', 'Previous SHC champion');
+Database::add_toc_berth('WC', 'Wildcard');
+Database::add_toc_berth('K/T', 'Kids/Teens wildcard');
+Database::add_toc_berth('College', 'College wildcard');
+Database::add_toc_berth('Rookie', 'Rookie wildcard');
 
 echo("<!DOCTYPE html>
 <HTML><HEAD></HEAD><BODY><h1>Database successfully created!

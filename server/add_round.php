@@ -29,6 +29,8 @@ $is_regular = ($_POST['newroundregular'] == 'yes' ? 1 : 0);
 try
 {
     Database::add_round($name, $seq, $is_regular);
+    $abbr = $_POST['newroundtocname'];
+    Database::add_toc_berth($abbr, $name . ' winner');
     $title = "Round successfully added";
     $message = "<p>Round successfully added!</p>";
 }
