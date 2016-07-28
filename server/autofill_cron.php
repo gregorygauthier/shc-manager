@@ -317,7 +317,7 @@ STR
                         $tmp = $matches2[1][0];
                     }
                     $tmp = strip_tags($tmp);
-                    $tmp = clean_response($tmp, true)
+                    $tmp = clean_response($tmp, true);
                     $resps[$number] = $tmp;
                     if($tmp == '')
                     {
