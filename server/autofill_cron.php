@@ -59,6 +59,31 @@ REPORT
     exit(1);
 }
 
+function has_registered_responses($player_id, $clue_id_array)
+{
+    /* Returns the number of registered responses for the
+    given player to clues in $clue_id_array. */
+    $query_template = "SELECT COUNT(*) FROM player_responses
+        WHERE player_id = ? AND clue_id IN (%s)";
+    $tuple_text = implode(',', $clue_id_array);
+    $query = sprintf($query_template, $tuple_text);
+    $count = 0;
+    $stmt = $mysqli->prepare($query);
+    if(!$stmt)
+    {
+        report_error(sprintf(
+            "Could not prepare user response ".
+            "selection statement (error %d)",
+            $mysqli->errno));
+    }
+    $stmt->bind_param('i', $player_id);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+    return $count;
+}
+
 $mysqli = connect_mysql();
 if(!$mysqli)
 {
@@ -265,27 +290,12 @@ STR
             }
             
             
-            $query = sprintf("SELECT COUNT(*) FROM player_responses
-                WHERE player_id = ? AND clue_id IN
-                ('%d', '%d', '%d', '%d', '%d',
-                '%d', '%d', '%d', '%d', '%d')", $clue_ids[1][2],
-                $clue_ids[1][4], $clue_ids[1][6], $clue_ids[1][8],
-                $clue_ids[1][10], $clue_ids[2][3], $clue_ids[2][6],
-                $clue_ids[2][9], $clue_ids[2][12], $clue_ids[2][15]);
-            $stmt = $mysqli->prepare($query);
-            if(!$stmt)
-            {
-                report_error(sprintf(
-                    "Could not prepare user response ".
-                    "selection statement (error %d)",
-                    $mysqli->errno));
-            }
-            $stmt->bind_param('i', $player_id);
-            $stmt->execute();
-            $stmt->bind_result($count);
-            $stmt->fetch();
-            $stmt->close();
-            if($count > 0)
+            $clue_array = ($clue_ids[1][2], $clue_ids[1][4],
+                $clue_ids[1][6], $clue_ids[1][8],
+                $clue_ids[1][10], $clue_ids[2][3],
+                $clue_ids[2][6], $clue_ids[2][9],
+                $clue_ids[2][12], $clue_ids[2][15]);
+            if(has_registered_responses($player_id, $clue_array))
             {
                 $report .= sprintf(<<<STR
 Post #%d by %s was skipped because %s already has a registered response.
@@ -307,25 +317,7 @@ STR
                         $tmp = $matches2[1][0];
                     }
                     $tmp = strip_tags($tmp);
-                    $tmp = preg_replace('/&/', ' and ', $tmp);
-                    $tmp = preg_replace('/[-]/', ' ', $tmp);
-                    $tmp = preg_replace('/\(.*?\)|\[.*?\]|\{.*?\}/', '', $tmp);
-                    $tmp = preg_replace('/[^A-Za-z0-9.\s\/]/', '', $tmp);
-                    $tmp = preg_replace('/\.([^0-9]|$)/', '$1', $tmp);
-                    $tmp = preg_replace('/\s+/', ' ', $tmp);
-                    $tmp = trim($tmp);
-                    if(preg_match(<<<REGEX
-/\b[Cc][Ll][Aa][Mm]\b|\b[Pp][Aa][Ss][Ss]\b|[a-z]\S*CLAM|CLAM\S*[a-z]/
-REGEX
-, $tmp))
-                    {
-                        $tmp = '';
-                    }
-                    if(preg_match('/^(who|what) (is|are|was|were) (.*)$/i',
-                        $tmp, $matches2))
-                    {
-                        $tmp = $matches2[3];
-                    }
+                    $tmp = clean_response($tmp, true)
                     $resps[$number] = $tmp;
                     if($tmp == '')
                     {

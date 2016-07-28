@@ -354,4 +354,44 @@ HTML;
     }
     return implode($buffer);
 }
+
+function clean_response($response_text, $aggressive)
+{
+    $response_text = preg_replace('/&/', ' and ', $response_text);
+    $response_text = preg_replace('/[-]/', ' ', $response_text);
+    if($aggressive)
+    {
+        $response_text = preg_replace(
+            '/\(.*?\)|\[.*?\]|\{.*?\}/', '', $response_text);
+        $response_text = preg_replace(
+            '/[^[:alnum:][:space:]\.]/u', '', $response_text);
+    }
+    $response_text = preg_replace(
+            '/[:space:]+/u', ' ', $response_text);
+    $response_text = trim($response_text);
+    if($aggressive)
+    {
+        $s = explode(' ', strtoupper($response_text));
+        foreach($s as $word)
+        {
+            if($word == "CLAM")
+            {
+                return '';
+            }
+        }
+        if(preg_match(<<<REGEX
+/[a-z]\S*CLAM|CLAM\S*[a-z]/
+REGEX
+            , $response_text))
+        {
+            return '';
+        }
+        if(preg_match('/^(who|what) (is|are|was|were) (.*)$/i',
+            $response_text, $matches2))
+        {
+            $response_text = $matches2[3];
+        }
+    }
+    return $response_text;
+}
 ?>
