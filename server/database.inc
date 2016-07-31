@@ -469,22 +469,32 @@ class Database
             {
                 throw new Exception($mysqli->error);
             }
-        $insert_query = "INSERT INTO toc_berths (abbreviation,
-            description) VALUES (?, ?)";
-        $stmt = $mysqli->prepare($insert_query);
-        if(!$stmt)
-        {
-            throw new Exception($mysqli->error);
-        }
-        $stmt->bind_param('ss', $abbreviation, $description);
+            $insert_query = "INSERT INTO toc_berths (abbreviation,
+                description) VALUES (?, ?)";
+            $stmt = $mysqli->prepare($insert_query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('ss', $abbreviation, $description);
 
-        $stmt->execute();
-        if(!$stmt->affected_rows)
-        {
-            throw new Exception("Could not add TOC berth to database: {$mysqli->error}");
+            $stmt->execute();
+            if(!$stmt->affected_rows)
+            {
+                throw new Exception("Could not add TOC berth to database: {$mysqli->error}");
+            }
+            $stmt->close();
+            $return_val = $mysqli->insert_id;
+            return $return_val;
         }
-        $stmt->close();
-        $return_val = $mysqli->insert_id;
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
     }
     
     public function update_response($response_id, $response_text, $correct)
