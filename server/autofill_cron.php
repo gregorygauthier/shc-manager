@@ -27,7 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 $time = microtime(true);
 $report = '';
-$hostauthor = 'BoK';
+$hostauthors = array('OntarioQuizzer', 'rjaguar3');
 
 require_once('common.inc');
 require_once('simple_html_dom.php');
@@ -235,13 +235,13 @@ REPORT
             $postbody = $element->find('div.postbody', 0);
             $authorlinks = $postbody->find('p.author a');
             $author = trim($authorlinks[count($authorlinks) - 1]->innertext);
-            if($author == $hostauthor)
+            if(in_array($author, $hostauthors))
             {
                 $report .= sprintf(<<<STR
-Post #%d by %s was skipped because it was made by %s.
+Post #%d by %s was skipped because it was made by a host.
 
 STR
-    , $current_post, $author, $hostauthor);
+    , $current_post, $author);
                 continue;
             }
             $query = "SELECT id FROM players WHERE username=?";
