@@ -33,10 +33,10 @@ startpage(UNRESTRICTED);
 <title>SHC Manager</title>
 </head>
 <body>
-<h1>Welcome to the Summer Hiatus Challenge 2015 homepage!</h1>
+<h1>Welcome to the Summer Hiatus Challenge 2016 homepage!</h1>
 <p>The Summer Hiatus Challenge is a competition on <a href="http://jboard.tv">
 jboard.tv</a> (and, previously, the official Sony <i>Jeopardy!</i>
-message boards).  Now in its eleventh iteration, the Summer Hiatus Challenge
+message boards).  Now in its twelfth iteration, the Summer Hiatus Challenge
 gives <i>Jeopardy!</i> fans and contestant hopefuls the opportunity
 to participate in a fun trivia challenge with clues in the style of
 the clues featured on <i>Jeopardy!</i>.</p>
