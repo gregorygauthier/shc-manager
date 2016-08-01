@@ -23,6 +23,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(UNRESTRICTED);
+
+do
+{
+    $mysqli = connect_mysql();
+    
+    if(!$mysqli)
+    {
+        $errortext = "Could not connect to database.";
+        break;
+    }
+} while(false);
 ?>
 <!DOCTYPE html>
 <html lang="en">
