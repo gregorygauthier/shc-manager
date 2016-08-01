@@ -290,7 +290,7 @@ STR
             }
             
             
-            $clue_array = ($clue_ids[1][2], $clue_ids[1][4],
+            $clue_array = array($clue_ids[1][2], $clue_ids[1][4],
                 $clue_ids[1][6], $clue_ids[1][8],
                 $clue_ids[1][10], $clue_ids[2][3],
                 $clue_ids[2][6], $clue_ids[2][9],
