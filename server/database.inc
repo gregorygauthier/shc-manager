@@ -348,7 +348,7 @@ class Database
             {
                 throw new Exception($mysqli->error);
             }
-            $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie, $senior);
+            $stmt->bind_param('siiiii', $username, $teen, $college, $atb, $rookie, $senior);
             
             $stmt->execute();
             if(!$stmt->affected_rows)
