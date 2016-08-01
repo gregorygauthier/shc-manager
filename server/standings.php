@@ -33,6 +33,8 @@ do
         $errortext = "Could not connect to database.";
         break;
     }
+    
+    $mysqli->query("USE $mysql_dbname;");
 } while(false);
 ?>
 <!DOCTYPE html>
