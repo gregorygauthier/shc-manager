@@ -308,7 +308,7 @@ class Database
         }
     }
     
-    public function add_player($username, $teen, $college, $atb, $rookie)
+    public function add_player($username, $teen, $college, $atb, $rookie, $senior)
     {
         global $mysql_dbname;
         try
@@ -342,13 +342,13 @@ class Database
             
             $query = "INSERT INTO players
                 (username, teen_eligible, college_eligible,
-                atb_eligible, rookie_eligible) VALUES (?, ?, ?, ?, ?)";
+                atb_eligible, rookie_eligible, senior_eligible) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $mysqli->prepare($query);
             if(!$stmt)
             {
                 throw new Exception($mysqli->error);
             }
-            $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie);
+            $stmt->bind_param('siiii', $username, $teen, $college, $atb, $rookie, $senior);
             
             $stmt->execute();
             if(!$stmt->affected_rows)

@@ -48,7 +48,7 @@ do
     }
     $mysqli->query("USE $mysql_dbname;");
     $query = "SELECT username, teen_eligible, college_eligible, atb_eligible,
-        rookie_eligible FROM players WHERE id=?";
+        rookie_eligible, senior_eligible FROM players WHERE id=?";
     $stmt = $mysqli->prepare($query);
     if(!$stmt)
     {
@@ -58,7 +58,7 @@ do
     }
     $stmt->bind_param('i', $id);
     $stmt->execute();
-    $stmt->bind_result($username, $teen, $college, $atb, $rookie);
+    $stmt->bind_result($username, $teen, $college, $atb, $rookie, $senior);
     if(!$stmt->fetch())
     {
         $errortext = "Invalid user id provided.";
@@ -105,6 +105,12 @@ INPUT
 <label for="rookiecheck">Rookie eligible</label></p>
 INPUT
 , $rookie ? 'checked="checked"' : '');
+    printf(<<<INPUT
+<p><input type="checkbox" id="seniorcheck" name="senior" value="yes"
+%s />
+<label for="seniorcheck">Senior eligible</label></p>
+INPUT
+, $senior ? 'checked="checked"' : '');
     echo '<button type="submit">Submit</button>';
 }
 ?>

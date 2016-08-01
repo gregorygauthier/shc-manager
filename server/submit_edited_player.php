@@ -67,7 +67,8 @@ do
     }
     $stmt->close();
     $query = "UPDATE players SET teen_eligible=?, college_eligible=?,
-        atb_eligible=? WHERE id=?";
+        atb_eligible=?, rookie_eligible=?,
+        senior_eligible=? WHERE id=?";
     $stmt = $mysqli->prepare($query);
     if(!$stmt)
     {
@@ -78,8 +79,10 @@ do
     $teen = (isset($_POST['teen']) and $_POST['teen'] == 'yes');
     $college = (isset($_POST['college']) and $_POST['college'] == 'yes');
     $atb = (isset($_POST['atb']) and $_POST['atb'] == 'yes');
-    $stmt->bind_param('iiii', 
-        $teen, $college, $atb, $id);
+    $rookie = (isset($_POST['rookie']) and $_POST['rookie'] == 'yes');
+    $senior = (isset($_POST['senior']) and $_POST['senior'] == 'yes');
+    $stmt->bind_param('iiiiii', 
+        $teen, $college, $atb, $rookie, $senior, $id);
     $stmt->execute();
     if($stmt->errno)
     {

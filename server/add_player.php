@@ -29,9 +29,10 @@ $teen = (isset($_POST["teen"]));
 $college = (isset($_POST["college"]));
 $atb = (isset($_POST["atb"]));
 $rookie = (isset($_POST["rookie"]));
+$senior = (isset($_POST["senior"]));
 try
 {
-    $return_value = Database::add_player($username, $teen, $college, $atb, $rookie);
+    $return_value = Database::add_player($username, $teen, $college, $atb, $rookie, $senior);
     if($return_value)
     {
         $title = "Player successfully added";

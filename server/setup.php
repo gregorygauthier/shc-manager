@@ -122,6 +122,7 @@ $query = "CREATE TABLE players (
   college_eligible BOOLEAN,
   atb_eligible BOOLEAN,
   rookie_eligible BOOLEAN,
+  senior_eligible BOOLEAN,
   toc TINYINT,
   FOREIGN KEY (toc) REFERENCES toc_berths(id),
   INDEX username_idx (username))

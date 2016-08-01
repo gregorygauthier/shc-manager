@@ -45,6 +45,8 @@ startpage(RESTRICTED);
 <label for="atbcheck">ATB eligible</label></p>
 <p><input type="checkbox" id="rookiecheck" name="rookie" value="yes" />
 <label for="rookiecheck">Rookie eligible</label></p>
+<p><input type="checkbox" id="seniorcheck" name="senior" value="yes" />
+<label for="seniorcheck">Senior eligible</label></p>
 <button type="submit">Submit</button>
 </form>
 <?php footer();?>

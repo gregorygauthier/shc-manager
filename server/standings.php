@@ -23,34 +23,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require_once('common.inc');
 startpage(UNRESTRICTED);
-
-do
-{
-    $mysqli = connect_mysql();
-    
-    if(!$mysqli)
-    {
-        $errortext = "Could not connect to database.";
-        break;
-    }
-
-    $mysqli->query("USE $mysql_dbname;");
-
-    $query = "SELECT username, teen_eligible, college_eligible, atb_eligible,
-        overall_score, overall_ungraded FROM overall_scores INNER JOIN players
-        ON overall_scores.player_id = players.id ORDER BY overall_score DESC";
-
-    $stmt = $mysqli->prepare($query);
-    
-    if(!$stmt)
-    {
-        $errortext = "Could not prepare statement.";
-        break;
-    }
-
-    
-
-} while(false);
 ?>
 <!DOCTYPE html>
 <html lang="en">

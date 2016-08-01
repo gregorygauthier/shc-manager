@@ -200,7 +200,7 @@ function get_standings($day_id, $round_id)
     $mysqli->query("USE $mysql_dbname;");
 
     $overall_query = "SELECT username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible, overall_score, overall_ungraded,
+        atb_eligible, rookie_eligible, senior_eligible, overall_score, overall_ungraded,
         toc_berths.abbreviation, toc_berths.description, days_played
         FROM overall_scores
         INNER JOIN players ON overall_scores.player_id = players.id
@@ -208,7 +208,7 @@ function get_standings($day_id, $round_id)
         ORDER BY overall_score DESC, username ASC";
 
     $round_query = "SELECT username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible, round_score, round_ungraded,
+        atb_eligible, rookie_eligible, senior_eligible, round_score, round_ungraded,
         toc_berths.abbreviation, toc_berths.description, days_played
         FROM round_scores
         INNER JOIN players ON round_scores.player_id = players.id
@@ -216,7 +216,7 @@ function get_standings($day_id, $round_id)
         WHERE round_id = ? ORDER BY round_score DESC, username ASC";
 
     $day_query = "SELECT username, teen_eligible, college_eligible,
-        atb_eligible, rookie_eligible, daily_score, daily_ungraded,
+        atb_eligible, rookie_eligible, senior_eligible, daily_score, daily_ungraded,
         toc_berths.abbreviation, toc_berths.description, days_played
         FROM daily_scores
         INNER JOIN players ON daily_scores.player_id = players.id
@@ -240,7 +240,8 @@ function get_standings($day_id, $round_id)
     }
     $stmt->execute();
     $stmt->bind_result($username, $teen_eligible, $college_eligible,
-        $atb_eligible, $rookie_eligible, $score, $num_ungraded,
+        $atb_eligible, $rookie_eligible, $senior_eligible,
+        $score, $num_ungraded,
         $toc_berth_abbr, $toc_berth_desc, $days_played);
 
     $usernames = array();
@@ -248,6 +249,7 @@ function get_standings($day_id, $round_id)
     $college_eligible_stats = array();
     $atb_eligible_stats = array();
     $rookie_eligible_stats = array();
+    $senior_eligible_stats = array();
     $scores = array();
     $ungradeds = array();
     $toc_berth_abbrs = array();
@@ -261,6 +263,7 @@ function get_standings($day_id, $round_id)
         $college_eligible_stats[] = $college_eligible;
         $atb_eligible_stats[] = $atb_eligible;
         $rookie_eligible_stats[] = $rookie_eligible;
+        $senior_eligible_stats[] = $senior_eligible;
         $scores[] = $score;
         $ungradeds[] = $num_ungraded;
         $toc_berth_abbrs[] = $toc_berth_abbr;
@@ -316,7 +319,7 @@ HTML
 <table>
 <tr><th>Rank</th><th>Player</th>
 <th>In TOC?</th><th>Teen</th><th>College</th>
-<th>ATB</th><th>Rookie</th><th>Days played</th><th>Score</th><th>Ungraded</th></tr>
+<th>ATB</th><th>Rookie</th><th>Senior</th><th>Days played</th><th>Score</th><th>Ungraded</th></tr>
 HTML;
         $records_printed = 0;
         foreach($usernames as $key => $value)
@@ -331,6 +334,7 @@ HTML;
                 '<td>%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
                 '<td class="marker">%s</td><td class="marker">%s</td>'.
+                '<td class="marker">%s</td>'.
                 '<td class="count">%d</td>'.
                 '<td class="score">%d</td><td class="%scount">%s</td></tr>',
                 $records_printed % 2 ? "odd" : "even", $rank,
@@ -341,6 +345,7 @@ HTML;
                 $college_eligible_stats[$key] ? 'C' : '',
                 $atb_eligible_stats[$key] ? 'A' : '',
                 $rookie_eligible_stats[$key] ? 'R' : '',
+                $senior_eligible_stats[$key] ? 'S' : '',
                 $days_played_stats[$key],
                 $scores[$key],
                 $ungradeds[$key] ? 'alert ': '',
