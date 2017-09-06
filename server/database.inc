@@ -30,7 +30,7 @@ require_once("config.inc");
 
 class Database
 {
-    public function add_round($name, $sequence = null, $is_regular)
+    public static function add_round($name, $sequence = null, $is_regular)
     {
         global $mysql_dbname;
         try
@@ -92,7 +92,7 @@ class Database
         }
     }
     
-    public function add_day($round_id, $name, $date, $url)
+    public static function add_day($round_id, $name, $date, $url)
     {
         global $mysql_dbname;
         try
@@ -150,7 +150,7 @@ class Database
         }
     }
     
-    public function add_category($name, $explanatory_text, $seq = null, $day_id)
+    public static function add_category($name, $explanatory_text, $seq = null, $day_id)
     {
         global $mysql_dbname;
         try
@@ -216,7 +216,7 @@ class Database
         }
     }
     
-    public function add_clue($clue_text, $category_id, $point_value, $wrong_point_value)
+    public static function add_clue($clue_text, $category_id, $point_value, $wrong_point_value)
     {
         global $mysql_dbname;
         try
@@ -262,7 +262,7 @@ class Database
         }
     }
     
-    public function add_response($clue_id, $response_text, $correct)
+    public static function add_response($clue_id, $response_text, $correct)
     {
         global $mysql_dbname;
         try
@@ -308,7 +308,7 @@ class Database
         }
     }
     
-    public function add_player($username, $teen, $college, $atb, $rookie, $senior)
+    public static function add_player($username, $teen, $college, $atb, $rookie, $senior)
     {
         global $mysql_dbname;
         try
@@ -370,7 +370,7 @@ class Database
         }
     }
     
-    public function add_player_response($player_id, $clue_id, $response_text)
+    public static function add_player_response($player_id, $clue_id, $response_text)
     {
         if(is_null($player_id) or is_null($clue_id))
         {
@@ -449,7 +449,7 @@ class Database
         }
     }
     
-    public function add_toc_berth($abbreviation, $description)
+    public static function add_toc_berth($abbreviation, $description)
     {
         if(is_null($description) or $description == '' or
             is_null($abbreviation) or $abbreviation == '')
@@ -497,7 +497,7 @@ class Database
         }
     }
     
-    public function update_response($response_id, $response_text, $correct)
+    public static function update_response($response_id, $response_text, $correct)
     {
         global $mysql_dbname;
         try
@@ -537,7 +537,7 @@ class Database
         }
     }
     
-    public function delete_response($response_id)
+    public static function delete_response($response_id)
     {
         global $mysql_dbname;
         try
@@ -576,7 +576,7 @@ class Database
         }
     }
     
-    public function get_responses_for_clue($clue_id, $include_ungraded = false)
+    public static function get_responses_for_clue($clue_id, $include_ungraded = false)
     {
         global $mysql_dbname;
         try
@@ -649,7 +649,7 @@ class Database
         }
     }
     
-    public function get_round_by_id($id)
+    public static function get_round_by_id($id)
     {
         global $mysql_dbname;
         try
@@ -702,7 +702,7 @@ class Database
         }
     }
     
-    public function get_day_by_id($id)
+    public static function get_day_by_id($id)
     {
         global $mysql_dbname;
         try
@@ -760,7 +760,7 @@ class Database
         }
     }
     
-    public function get_category_by_id($id)
+    public static function get_category_by_id($id)
     {
         global $mysql_dbname;
         try
@@ -815,7 +815,7 @@ class Database
         }
     }
     
-    public function get_clue_by_id($id, $with_statistics = false)
+    public static function get_clue_by_id($id, $with_statistics = false)
     {
         global $mysql_dbname;
         try
@@ -879,7 +879,7 @@ class Database
         }
     }
     
-    public function get_statistics_for_clue($id)
+    public static function get_statistics_for_clue($id)
     {
         global $mysql_dbname;
         try
@@ -947,7 +947,7 @@ class Database
         }
     }
     
-    public function get_clues_for_category($category_id, $with_statistics = false)
+    public static function get_clues_for_category($category_id, $with_statistics = false)
     {
         global $mysql_dbname;
         try
