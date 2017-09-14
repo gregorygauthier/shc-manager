@@ -27,7 +27,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 $time = microtime(true);
 $report = '';
-$hostauthors = array('OntarioQuizzer', 'rjaguar3');
+$hostauthors = array('rjaguar3');
+
+$toc_only = true;
+$check_posters = false;
+$dryrun = true; # ($check_posters || false);
+
+if($dryrun) {
+    $report .= <<<MESSAGE
+***This is a dry run, no data was saved.***
+
+
+MESSAGE
+    ;
+}
 
 require_once('common.inc');
 require_once('simple_html_dom.php');
@@ -61,6 +74,7 @@ REPORT
 
 function has_registered_responses($player_id, $clue_id_array)
 {
+    global $mysqli;
     /* Returns the number of registered responses for the
     given player to clues in $clue_id_array. */
     $query_template = "SELECT COUNT(*) FROM player_responses
@@ -90,8 +104,14 @@ if(!$mysqli)
     report_error("Could not connect to database.");
 }
 $mysqli->query("USE $mysql_dbname;");
-$query = "SELECT id, thread_url, highest_parsed_post FROM days WHERE
-    thread_url IS NOT NULL";
+if ($toc_only) {
+    $query = "SELECT days.id, thread_url, highest_parsed_post FROM days INNER JOIN
+        rounds ON days.round_id = rounds.id WHERE
+        thread_url IS NOT NULL AND is_regular = 0";
+} else {
+    $query = "SELECT id, thread_url, highest_parsed_post FROM days WHERE
+        thread_url IS NOT NULL";
+}
 $stmt = $mysqli->prepare($query);
 if(!$stmt)
 {
@@ -190,7 +210,7 @@ REPORT
         continue;
     }
     
-    $highest = (is_null($highests[$id]) ? -1 : $highests[$id]);
+    $highest = ($check_posters || is_null($highests[$id]) ? -1 : $highests[$id]);
     $start = floor(($highest) / 20) * 20;
     if($start < 0)
     {
@@ -206,9 +226,11 @@ REPORT
 , $url);
         continue;
     }
-    $last_page_number = intval($page->find('div.pagination strong', 1)
-        ->innertext);
-    $highest_start = ($last_page_number - 1) * 20;
+    $num_posts_matches = array();
+    preg_match('/(\d+) post/', $page->find('div.pagination', 0)->plaintext, $num_posts_matches);
+    $num_posts = intval($num_posts_matches[1]);
+    // -1 is because posts are zero-indexed.
+    $highest_start = floor(($num_posts - 1) / 20) * 20;
     $report .= sprintf(<<<REPORT
 URL %s is being processed.
 
@@ -238,10 +260,10 @@ REPORT
             if(in_array($author, $hostauthors))
             {
                 $report .= sprintf(<<<STR
-Post #%d by %s was skipped because it was made by a host.
+Post #%d by %s %s because it was made by a host.
 
 STR
-    , $current_post, $author);
+    , $current_post, $author, $check_posters ? "is okay" : "was skipped");
                 continue;
             }
             $query = "SELECT id FROM players WHERE username=?";
@@ -298,10 +320,10 @@ STR
             if(has_registered_responses($player_id, $clue_array))
             {
                 $report .= sprintf(<<<STR
-Post #%d by %s was skipped because %s already has a registered response.
+Post #%d by %s %s because %s already has a registered response.
 
 STR
-    , $current_post, $author, $author);
+    , $current_post, $author, $check_posters ? "is okay": "was skipped", $author);
                 continue;
             }
             $resps = array();
@@ -337,56 +359,58 @@ REPORT
                     }
                 }
             }
-            $query = "INSERT INTO player_responses (player_id, clue_id,
-                response_text) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?),
-                (?, ?, ?), (?, ?, ?), (?, ?, ?),
-                (?, ?, ?), (?, ?, ?), (?, ?, ?),
-                (?, ?, ?)";
-            $stmt = $mysqli->prepare($query);
-            if(!$stmt)
-            {
-                report_error(sprintf(
-                    "Could not prepare insertion statement (error %d)",
-                    $mysqli->errno));
-            }
-            $stmt->bind_param('iisiisiisiisiisiisiisiisiisiis',
-                $player_id, $clue_ids[1][2], $resps[1],
-                $player_id, $clue_ids[1][4], $resps[2],
-                $player_id, $clue_ids[1][6], $resps[3],
-                $player_id, $clue_ids[1][8], $resps[4],
-                $player_id, $clue_ids[1][10], $resps[5],
-                $player_id, $clue_ids[2][3], $resps[6],
-                $player_id, $clue_ids[2][6], $resps[7],
-                $player_id, $clue_ids[2][9], $resps[8],
-                $player_id, $clue_ids[2][12], $resps[9],
-                $player_id, $clue_ids[2][15], $resps[10]);
-            $stmt->execute();
-            if($stmt->errno)
-            {
-                $report .= sprintf(<<<STR
+            if(!$dryrun) {
+                $query = "INSERT INTO player_responses (player_id, clue_id,
+                    response_text) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?),
+                    (?, ?, ?), (?, ?, ?), (?, ?, ?),
+                    (?, ?, ?), (?, ?, ?), (?, ?, ?),
+                    (?, ?, ?)";
+                $stmt = $mysqli->prepare($query);
+                if(!$stmt)
+                {
+                    report_error(sprintf(
+                        "Could not prepare insertion statement (error %d)",
+                        $mysqli->errno));
+                }
+                $stmt->bind_param('iisiisiisiisiisiisiisiisiisiis',
+                    $player_id, $clue_ids[1][2], $resps[1],
+                    $player_id, $clue_ids[1][4], $resps[2],
+                    $player_id, $clue_ids[1][6], $resps[3],
+                    $player_id, $clue_ids[1][8], $resps[4],
+                    $player_id, $clue_ids[1][10], $resps[5],
+                    $player_id, $clue_ids[2][3], $resps[6],
+                    $player_id, $clue_ids[2][6], $resps[7],
+                    $player_id, $clue_ids[2][9], $resps[8],
+                    $player_id, $clue_ids[2][12], $resps[9],
+                    $player_id, $clue_ids[2][15], $resps[10]);
+                $stmt->execute();
+                if($stmt->errno)
+                {
+                    $report .= sprintf(<<<STR
 Post #%d by %s was skipped because an insertion error happened (number %d).
 The error message was: %s
 
 STR
-    , $current_post, $author, $stmt->errno, $stmt->error);
-            }
-            elseif($stmt->affected_rows < 10)
-            {
-                $report .= sprintf(<<<STR
+        , $current_post, $author, $stmt->errno, $stmt->error);
+                }
+                elseif($stmt->affected_rows < 10)
+                {
+                    $report .= sprintf(<<<STR
 Post #%d by %s was partially processed (%d responses inserted).
 
 STR
-    , $current_post, $author, $stmt->affected_rows);
-            }
-            else
-            {
-                $report .= sprintf(<<<STR
+        , $current_post, $author, $stmt->affected_rows);
+                }
+                else
+                {
+                    $report .= sprintf(<<<STR
 Post #%d by %s was successfully processed.
 
 STR
-    , $current_post, $author);
+        , $current_post, $author);
+                }
+                $stmt->close();
             }
-            $stmt->close();
         }
         $start += 20;
         $page = file_get_html($url . "&start=$start");
@@ -400,19 +424,21 @@ REPORT
             break;
         }
     }
-    $query = "UPDATE days SET highest_parsed_post=? WHERE id=?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param('ii', $current_post, $id);
-    $stmt->execute();
-    if($stmt->errno)
-    {
-        $report .= sprintf(<<<REPORT
+    if(!$dryrun) {
+        $query = "UPDATE days SET highest_parsed_post=? WHERE id=?";
+        $stmt = $mysqli->prepare($query);
+        $stmt->bind_param('ii', $current_post, $id);
+        $stmt->execute();
+        if($stmt->errno)
+        {
+            $report .= sprintf(<<<REPORT
 Error insert highest parsed post into database (error %d)
 
 REPORT
-, $stmt->errno);
+    , $stmt->errno);
+        }
+        $stmt->close();
     }
-    $stmt->close();
     $report .= sprintf(<<<REPORT
 URL %s is finished; highest post parsed is %d.
 
