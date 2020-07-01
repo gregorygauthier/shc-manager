@@ -1007,6 +1007,44 @@ class Database
             throw $e;
         }
     }
+
+    public static function reset_password($username, $hashed_password) {
+        global $mysql_dbname;
+        try
+        {
+            $mysqli = connect_mysql();
+            if(!$mysqli)
+            {
+                throw new Exception("Could not connect to database.");
+            }
+            
+            if(!$mysqli->query("USE $mysql_dbname;"))
+            {
+                throw new Exception($mysqli->error);
+            }
+            
+            $query = "UPDATE users SET hashed_password=? WHERE username=?";
+            $stmt = $mysqli->prepare($query);
+            if(!$stmt)
+            {
+                throw new Exception($mysqli->error);
+            }
+            $stmt->bind_param('ss', $hashed_password, $username);
+            
+            $stmt->execute();
+            $stmt->close();
+            $mysqli->close();
+            return 1;
+        }
+        catch (Exception $e)
+        {
+            if($mysqli)
+            {
+                $mysqli->close();
+            }
+            throw $e;
+        }
+    }
 }
 
 class Response
@@ -1061,4 +1099,19 @@ class Round
     public $name;
     public $sequence;
     public $is_regular;
+}
+
+class StandingsEntry
+{
+    public $username;
+    public $teen_eligible;
+    public $college_eligible;
+    public $atb_eligible;
+    public $rookie_eligible;
+    public $senior_eligible;
+    public $score;
+    public $num_ungraded;
+    public $toc_berth_abbr;
+    public $toc_berth_desc;
+    public $days_played;
 }

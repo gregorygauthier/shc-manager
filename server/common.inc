@@ -207,72 +207,70 @@ function get_standings($day_id, $round_id)
         LEFT JOIN toc_berths ON players.toc=toc_berths.id
         ORDER BY overall_score DESC, username ASC";
 
-    $round_query = "SELECT username, teen_eligible, college_eligible,
+    $round_query_template = "SELECT username, teen_eligible, college_eligible,
         atb_eligible, rookie_eligible, senior_eligible, round_score, round_ungraded,
         toc_berths.abbreviation, toc_berths.description, days_played
         FROM round_scores
         INNER JOIN players ON round_scores.player_id = players.id
         LEFT JOIN toc_berths ON players.toc=toc_berths.id
-        WHERE round_id = ? ORDER BY round_score DESC, username ASC";
+        WHERE round_id = ? %s ORDER BY round_score DESC, username ASC";
 
-    $day_query = "SELECT username, teen_eligible, college_eligible,
+    $day_query_template = "SELECT username, teen_eligible, college_eligible,
         atb_eligible, rookie_eligible, senior_eligible, daily_score, daily_ungraded,
         toc_berths.abbreviation, toc_berths.description, days_played
         FROM daily_scores
         INNER JOIN players ON daily_scores.player_id = players.id
         LEFT JOIN toc_berths ON players.toc=toc_berths.id
-        WHERE day_id = ?
+        WHERE day_id = ? %s
         ORDER BY daily_score DESC, username ASC";
 
-    if(!is_null($day_id) and $day_id > 0)
-    {
-        $stmt = $mysqli->prepare($day_query);
-        $stmt->bind_param('i', $day_id);
+    // Determine the type of query we are making
+    if(!is_null($day_id) and $day_id > 0) {
+        $is_day_query = true;
+        $is_round_query = false;
     }
     elseif(!is_null($round_id) and $round_id > 0)
     {
-        $stmt = $mysqli->prepare($round_query);
+        $is_day_query = false;
+        $is_round_query = true;
+    }
+    else {
+        $is_day_query = false;
+        $is_round_query = false;
+    }
+
+    if($is_day_query)
+    {
+        $query = "SELECT is_regular FROM rounds INNER JOIN days ON ".
+            "rounds.id = days.round_id WHERE days.id = ?";
+        $stmt = $mysqli->prepare($query);
+        assert($stmt);
+        $stmt->bind_param('i', $day_id);
+        $stmt->execute();
+        $stmt->bind_result($is_regular);
+        $stmt->fetch();
+        $stmt->close();
+        $stratify = !$is_regular;
+        $template = $day_query_template;
+    }
+    elseif($is_round_query)
+    {
+        $query = "SELECT is_regular FROM rounds WHERE id = ?";
+        $stmt = $mysqli->prepare($query);
         $stmt->bind_param('i', $round_id);
+        $stmt->execute();
+        $stmt->bind_result($is_regular);
+        $stmt->fetch();
+        $stmt->close();
+        $stratify = !$is_regular;
+        $template = $round_query_template;
     }
     else // overall standings
     {
-        $stmt = $mysqli->prepare($overall_query);
-    }
-    $stmt->execute();
-    $stmt->bind_result($username, $teen_eligible, $college_eligible,
-        $atb_eligible, $rookie_eligible, $senior_eligible,
-        $score, $num_ungraded,
-        $toc_berth_abbr, $toc_berth_desc, $days_played);
-
-    $usernames = array();
-    $teen_eligible_stats = array();
-    $college_eligible_stats = array();
-    $atb_eligible_stats = array();
-    $rookie_eligible_stats = array();
-    $senior_eligible_stats = array();
-    $scores = array();
-    $ungradeds = array();
-    $toc_berth_abbrs = array();
-    $toc_berth_descs = array();
-    $days_played_stats = array();
-
-    while($stmt->fetch())
-    {
-        $usernames[] = $username;
-        $teen_eligible_stats[] = $teen_eligible;
-        $college_eligible_stats[] = $college_eligible;
-        $atb_eligible_stats[] = $atb_eligible;
-        $rookie_eligible_stats[] = $rookie_eligible;
-        $senior_eligible_stats[] = $senior_eligible;
-        $scores[] = $score;
-        $ungradeds[] = $num_ungraded;
-        $toc_berth_abbrs[] = $toc_berth_abbr;
-        $toc_berth_descs[] = $toc_berth_desc;
-        $days_played_stats[] = $days_played;
+        $stratify = false;
     }
 
-    $stmt->close();
-    if(!is_null($day_id) and $day_id > 0)
+    if($is_day_query)
     {
         $query = "SELECT name FROM days WHERE id = ?";
         $stmt = $mysqli->prepare($query);
@@ -283,7 +281,7 @@ function get_standings($day_id, $round_id)
         $buffer[] = sprintf ('<h2>Day results for %s</h2>', $dayname);
         $stmt->close();
     }
-    elseif(!is_null($round_id) and $round_id > 0)
+    elseif($is_round_query)
     {
         $query = "SELECT name FROM rounds WHERE id = ?";
         $stmt = $mysqli->prepare($query);
@@ -315,48 +313,124 @@ function get_standings($day_id, $round_id)
 <a href="%s">%s</a>.</p>
 HTML
 , $link, $link);
-        $buffer[] =<<<HTML
+    }
+    if ($stratify)
+    {
+        $buffer[] = '<h3>Championship division</h3>';
+        $upper_query = sprintf($template, " AND players.toc IS NOT NULL");
+        $stmt = $mysqli->prepare($upper_query);
+        assert($stmt);
+        if ($is_day_query) {
+            $stmt->bind_param('i', $day_id);
+        } elseif ($is_round_query) {
+            $stmt->bind_param('i', $round_id);
+        }
+        $buffer[] = standings_table_string(get_standings_entries($stmt));
+        
+        $buffer[] = '<h3>Consolation division</h3>';
+        $lower_query = sprintf($template, " AND players.toc IS NULL");
+        $stmt = $mysqli->prepare($lower_query);
+        assert($stmt);
+        if ($is_day_query) {
+            $stmt->bind_param('i', $day_id);
+        } elseif ($is_round_query) {
+            $stmt->bind_param('i', $round_id);
+        }
+        $buffer[] = standings_table_string(get_standings_entries($stmt));
+        
+    }
+    else
+    {
+        if ($is_day_query || $is_round_query) {
+            $query = sprintf($template, "");
+        } else {
+            $query = $overall_query;
+        }
+        $stmt = $mysqli->prepare($query);
+        assert($stmt);
+        if ($is_day_query) {
+            $stmt->bind_param('i', $day_id);
+        } elseif ($is_round_query) {
+            $stmt->bind_param('i', $round_id);
+        }
+        $buffer[] = standings_table_string(get_standings_entries($stmt));
+    }
+    if(isset($errortext))
+    {
+        return sprintf('<p class="error">%s</p>', $errortext);
+    }
+    return implode($buffer);
+}
+
+function get_standings_entries($stmt)
+{
+    assert($stmt != false);
+    $stmt->execute();
+    $stmt->bind_result($username, $teen_eligible, $college_eligible,
+        $atb_eligible, $rookie_eligible, $senior_eligible,
+        $score, $num_ungraded,
+        $toc_berth_abbr, $toc_berth_desc, $days_played);
+    $standings_entries = array();
+    while($stmt->fetch())
+    {
+        $entry = new StandingsEntry();
+        $entry->username = $username;
+        $entry->teen_eligible = $teen_eligible;
+        $entry->college_eligible = $college_eligible;
+        $entry->atb_eligible = $atb_eligible;
+        $entry->rookie_eligible = $rookie_eligible;
+        $entry->senior_eligible = $senior_eligible;
+        $entry->score = $score;
+        $entry->num_ungraded = $num_ungraded;
+        $entry->toc_berth_abbr = $toc_berth_abbr;
+        $entry->toc_berth_desc = $toc_berth_desc;
+        $entry->days_played = $days_played;
+        $standings_entries[] = $entry;
+    }
+
+    $stmt->close();
+    return $standings_entries;
+}
+
+function standings_table_string($standings_entries)
+{
+    $buffer[] =<<<HTML
 <table>
 <tr><th>Rank</th><th>Player</th>
 <th>In TOC?</th><th>Teen</th><th>College</th>
 <th>ATB</th><th>Rookie</th><th>Senior</th><th>Days played</th><th>Score</th><th>Ungraded</th></tr>
 HTML;
-        $records_printed = 0;
-        foreach($usernames as $key => $value)
-        {
-            $records_printed++;
-            if(!isset($lastscore) or $scores[$key] != $lastscore)
-            {
-                $rank = $records_printed;
-                $lastscore = $scores[$key];
-            }
-            $buffer[] = sprintf('<tr class="%s"><td class="rank">%d</td>'.
-                '<td>%s</td><td class="marker">%s</td>'.
-                '<td class="marker">%s</td><td class="marker">%s</td>'.
-                '<td class="marker">%s</td><td class="marker">%s</td>'.
-                '<td class="marker">%s</td>'.
-                '<td class="count">%d</td>'.
-                '<td class="score">%d</td><td class="%scount">%s</td></tr>',
-                $records_printed % 2 ? "odd" : "even", $rank,
-                $value, is_null($toc_berth_abbrs[$key]) ? '' :
-                sprintf('<span class="tocsymbol" title="%s">%s</span>',
-                    $toc_berth_descs[$key], $toc_berth_abbrs[$key]),
-                $teen_eligible_stats[$key] ? 'T' : '',
-                $college_eligible_stats[$key] ? 'C' : '',
-                $atb_eligible_stats[$key] ? 'A' : '',
-                $rookie_eligible_stats[$key] ? 'R' : '',
-                $senior_eligible_stats[$key] ? 'S' : '',
-                $days_played_stats[$key],
-                $scores[$key],
-                $ungradeds[$key] ? 'alert ': '',
-                $ungradeds[$key] ? $ungradeds[$key] : '');
-        }
-        $buffer[] = '</table>';
-    }
-    else
+    $records_printed = 0;
+    foreach ($standings_entries as $entry)
     {
-        return sprintf('<p class="error">%s</p>', $errortext);
+        $records_printed++;
+        if(!isset($lastscore) or $entry->score != $lastscore)
+        {
+            $rank = $records_printed;
+            $lastscore = $entry->score;
+        }
+        $buffer[] = sprintf('<tr class="%s"><td class="rank">%d</td>'.
+            '<td>%s</td><td class="marker">%s</td>'.
+            '<td class="marker">%s</td><td class="marker">%s</td>'.
+            '<td class="marker">%s</td><td class="marker">%s</td>'.
+            '<td class="marker">%s</td>'.
+            '<td class="count">%d</td>'.
+            '<td class="score">%d</td><td class="%scount">%s</td></tr>',
+            $records_printed % 2 ? "odd" : "even", $rank,
+            $entry->username, is_null($entry->toc_berth_abbr) ? '' :
+            sprintf('<span class="tocsymbol" title="%s">%s</span>',
+                $entry->toc_berth_desc, $entry->toc_berth_abbr),
+            $entry->teen_eligible ? 'T' : '',
+            $entry->college_eligible ? 'C' : '',
+            $entry->atb_eligible ? 'A' : '',
+            $entry->rookie_eligible ? 'R' : '',
+            $entry->senior_eligible ? 'S' : '',
+            $entry->days_played,
+            $entry->score,
+            $entry->num_ungraded ? 'alert ': '',
+            $entry->num_ungraded ? $entry->num_ungraded : '');
     }
+    $buffer[] = '</table>';
     return implode($buffer);
 }
 
@@ -372,7 +446,7 @@ function clean_response($response_text, $aggressive)
             '/[^[:alnum:][:space:]\.]/u', '', $response_text);
     }
     $response_text = preg_replace(
-            '/[:space:]+/u', ' ', $response_text);
+            '/[[:space:]]+/u', ' ', $response_text);
     $response_text = trim($response_text);
     if($aggressive)
     {

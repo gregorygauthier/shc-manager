@@ -31,7 +31,7 @@ $hostauthors = array('rjaguar3');
 
 $toc_only = true;
 $check_posters = false;
-$dryrun = true; # ($check_posters || false);
+$dryrun = ($check_posters || false);
 
 if($dryrun) {
     $report .= <<<MESSAGE

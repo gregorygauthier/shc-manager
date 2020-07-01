@@ -83,26 +83,19 @@ MESSAGE;
         $password = '';
         for($i = 0; $i < 12; $i++)
         {
-            $password .= chr(rand(asc('a'), asc('z')));
+            $password .= chr(rand(ord('a'), ord('z')));
         }
         $hash = hash('sha512', $password.$salt);
-        $subquery = "UPDATE users SET hashed_password=? WHERE username=?";
-        $substmt = $mysqli->prepare($subquery);
-        $substmt->bind_param('ss', $hash, $_POST['username']);
-        $substmt->execute();
-        if(!$substmt->errno)
-        {
+        try {
+            Database::reset_password($username, $hash);
             $message = sprintf($message, $password);
             mail($email, "Password reset", $message,
                 "From:$admin_address\r\n");
             $result_message = "Your password has been reset.  The new password
                 for your account has been sent by e-mail.";
-        }
-        else
-        {
+        } catch (Exception $e) {
             $result_message = "An error occured in resetting your password.";
         }
-        $substmt->close();
     }
     else
     {

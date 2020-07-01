@@ -1,5 +1,5 @@
 <?php
-/** Copyright (c) 2012-2014 Gregory Gauthier
+/** Copyright (c) 2012-2018 Gregory Gauthier
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -33,10 +33,10 @@ startpage(UNRESTRICTED);
 <title>SHC Manager</title>
 </head>
 <body>
-<h1>Welcome to the Summer Hiatus Challenge 2017 homepage!</h1>
+<h1>Welcome to the Summer Hiatus Challenge 2018 homepage!</h1>
 <p>The Summer Hiatus Challenge is a competition on <a href="http://jboard.tv">
 jboard.tv</a> (and, previously, the official Sony <i>Jeopardy!</i>
-message boards).  Now in its thirteenth iteration, the Summer Hiatus Challenge
+message boards).  Now in its fourteenth iteration, the Summer Hiatus Challenge
 gives <i>Jeopardy!</i> fans and contestant hopefuls the opportunity
 to participate in a fun trivia challenge with clues in the style of
 the clues featured on <i>Jeopardy!</i>.</p>

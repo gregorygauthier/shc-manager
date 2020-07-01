@@ -46,7 +46,7 @@ will likely be most useful for you.</p>
 <h3 id="how-do-i-play">How do I play the Summer Hiatus Challenge?</h3>
 <p>To play the Summer Hiatus Challenge, create an account at
 <a href="http://jboard.tv">jboard.tv</a>.  Also, be sure to check
-<a href="http://www.jboard.tv/viewtopic.php?f=1&t=4254">the
+<a href="http://www.jboard.tv/viewtopic.php?f=1&t=4777">the
 Summer Hiatus Challenge rules</a>.</p>
 <h3 id="how-does-the-scoring-work">How does this scoring website work?</h3>
 <p>A computer program is regularly run to collect posts made in the SHC game
